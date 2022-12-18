@@ -1,22 +1,52 @@
-import 'package:artun_flutter_project/map.dart';
+import 'package:artun_flutter_project/model/app_state_maneger.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'navigation/app_router.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    const ArtunApp(),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ArtunApp extends StatefulWidget {
+  const ArtunApp({super.key});
+
+  @override
+  State<ArtunApp> createState() => _ArtunAppState();
+}
+
+class _ArtunAppState extends State<ArtunApp> {
+  final _appStateManager = AppStateManager();
+  late AppRouter _appRouter;
+
+  @override
+  void initState() {
+    _appRouter = AppRouter(
+      appStateManager: _appStateManager,
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blueGrey,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => _appStateManager,
+        )
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blueGrey,
+        ),
+        home: Router(
+          routerDelegate: _appRouter,
+          backButtonDispatcher: RootBackButtonDispatcher(),
+        ),
       ),
-      home:
-          Map(), //TODO: Talep listesi, talep listesinden haritaya geçiş haritada drone gerçek zamanlı gözüksün.
     );
   }
 }

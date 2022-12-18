@@ -1,4 +1,4 @@
-import 'package:artun_flutter_project/pages/Khome_page.dart';
+import 'package:artun_flutter_project/pages/kizilay/Khome_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -6,16 +6,16 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'dart:math' as math;
-import 'constants.dart';
+import '../constants.dart';
 
-class Map extends StatefulWidget {
-  const Map({super.key});
+class MapPage extends StatefulWidget {
+  const MapPage({super.key});
 
   @override
-  State<Map> createState() => _MapState();
+  State<MapPage> createState() => _MapPageState();
 }
 
-class _MapState extends State<Map> {
+class _MapPageState extends State<MapPage> {
   GoogleMapController? mapController;
 
   void _onMapCreated(GoogleMapController controller) {
@@ -89,57 +89,56 @@ class _MapState extends State<Map> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Artun Maps"),
-        backgroundColor: Colors.blue[700],
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.7,
-              child: GoogleMap(
-                  mapType: MapType.normal,
-                  gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                    Factory<OneSequenceGestureRecognizer>(
-                      () => EagerGestureRecognizer(),
-                    )
-                  },
-                  onTap: ((LatLng) {
-                    _markers.remove(const MarkerId("evim"));
-                    onAddMarker(LatLng);
-                  }),
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _evim,
-                    zoom: 15,
-                  ),
-                  polylines: {
-                    Polyline(
-                      polylineId: PolylineId("yol"),
-                      visible: true,
-                      zIndex: 1,
-                      points: [_vazo, _evim],
-                      color: Colors.purpleAccent,
-                      width: 3,
-                    ),
-                  },
-                  markers: _markers),
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            Text(
-                'Distance : ${getDistanceBetween(_vazo.latitude, _evim.latitude, _vazo.longitude, _evim.longitude)} km'),
-            TextButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return KhomePage();
-                  }));
-                },
-                child: Text("to home page"))
-          ],
+      body: Container(
+        color: const Color(0xFF11112C),
+        padding: EdgeInsets.all(16),
+        child: Center(
+          child: Column(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: GoogleMap(
+                      mapType: MapType.normal,
+                      gestureRecognizers: <
+                          Factory<OneSequenceGestureRecognizer>>{
+                        Factory<OneSequenceGestureRecognizer>(
+                          () => EagerGestureRecognizer(),
+                        )
+                      },
+                      onTap: ((LatLng) {
+                        _markers.remove(const MarkerId("evim"));
+                        onAddMarker(LatLng);
+                      }),
+                      onMapCreated: _onMapCreated,
+                      initialCameraPosition: CameraPosition(
+                        target: _evim,
+                        zoom: 15,
+                      ),
+                      polylines: {
+                        Polyline(
+                          polylineId: PolylineId("yol"),
+                          visible: true,
+                          zIndex: 1,
+                          points: [_vazo, _evim],
+                          color: Colors.purpleAccent,
+                          width: 3,
+                        ),
+                      },
+                      markers: _markers),
+                ),
+              ),
+              SizedBox(
+                height: 12,
+              ),
+              Text(
+                'Distance : ${getDistanceBetween(_vazo.latitude, _evim.latitude, _vazo.longitude, _evim.longitude)} km',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
       ),
     );
