@@ -41,7 +41,7 @@ class _TaleplerPageState extends State<TaleplerPage> {
         separatorBuilder: (context, index) => const SizedBox(
               height: 12,
             ),
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         itemCount: listId.length,
         itemBuilder: (context, index) {
           return Container(
@@ -50,14 +50,14 @@ class _TaleplerPageState extends State<TaleplerPage> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.3), blurRadius: 3),
+                      color: Colors.black.withOpacity(0.3), blurRadius: 2),
                 ]),
             child: ListTile(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
               leading: Icon(Icons.assignment),
-              subtitle: Text("anan"),
+              subtitle: Text("aman"),
               contentPadding: EdgeInsets.all(8),
               title: Text(listId[index]),
               trailing: ElevatedButton(

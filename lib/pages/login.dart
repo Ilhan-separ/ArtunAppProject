@@ -24,12 +24,27 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Container(
         child: Center(
-          child: TextButton(
-            child: Text('Login'),
-            onPressed: () async {
-              Provider.of<AppStateManager>(context, listen: false)
-                  .login('mockUsername', 'mockPassword');
-            },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                child: Text('LoginForK'),
+                onPressed: () async {
+                  Provider.of<AppStateManager>(context, listen: false)
+                      .loginForK('mockUsername', 'mockPassword');
+                },
+              ),
+              SizedBox(
+                height: 12,
+              ),
+              ElevatedButton(
+                child: Text('LoginForT'),
+                onPressed: () async {
+                  Provider.of<AppStateManager>(context, listen: false)
+                      .loginForT('mockUsername', 'mockPassword');
+                },
+              ),
+            ],
           ),
         ),
       ), //TODO: iki ayrı kullanıcı girişi olucak.

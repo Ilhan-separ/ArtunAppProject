@@ -8,10 +8,27 @@ class KanStokPage extends StatefulWidget {
 }
 
 class _KanStokPageState extends State<KanStokPage> {
+  List<String> bloodList = [
+    "A+",
+    "A-",
+    "B+",
+    "B-",
+    "O+",
+    "O-",
+    "AB+",
+    "AB-",
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(child: Text("kan Stoğu")),
+    return ListView(
+      children: [
+        for (var i = 0; i < bloodList.length; i++)
+          ListTile(
+            title: Text(bloodList[i]),
+            trailing: Text("24"),
+          )
+      ],
     );
   }
 }

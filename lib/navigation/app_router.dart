@@ -3,6 +3,7 @@ import 'package:artun_flutter_project/model/app_state_maneger.dart';
 import 'package:artun_flutter_project/pages/kizilay/Khome_page.dart';
 import 'package:artun_flutter_project/pages/login.dart';
 import 'package:artun_flutter_project/pages/splash.dart';
+import 'package:artun_flutter_project/pages/talepci/t_home_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter extends RouterDelegate
@@ -34,9 +35,10 @@ class AppRouter extends RouterDelegate
       //sayfa geçiş ayarları
       pages: [
         if (!appStateManager.isInitialied) SplashScreen.page(),
-        if (appStateManager.isInitialied && !appStateManager.isLoggedIn)
+        if (appStateManager.isInitialied && !appStateManager.isKLoggedIn)
           LoginPage.page(),
-        if (appStateManager.isLoggedIn)
+        if (appStateManager.isTLoggedIn) THomePage.page(),
+        if (appStateManager.isKLoggedIn)
           KhomePage.page(appStateManager.getSelectedTab),
       ],
     );

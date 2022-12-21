@@ -10,11 +10,13 @@ class AppTab {
 
 class AppStateManager extends ChangeNotifier {
   bool _initialized = false;
-  bool _loggedIn = false;
+  bool _kloggedIn = false;
+  bool _tloggedIn = false;
   int _selectedTab = AppTab.talep;
 
   bool get isInitialied => _initialized;
-  bool get isLoggedIn => _loggedIn;
+  bool get isKLoggedIn => _kloggedIn;
+  bool get isTLoggedIn => _tloggedIn;
   int get getSelectedTab => _selectedTab;
 
   void initializedApp() {
@@ -27,8 +29,13 @@ class AppStateManager extends ChangeNotifier {
     );
   }
 
-  void login(String username, String password) {
-    _loggedIn = true;
+  void loginForK(String username, String password) {
+    _kloggedIn = true;
+    notifyListeners();
+  }
+
+  void loginForT(String username, String password) {
+    _tloggedIn = true;
     notifyListeners();
   }
 
@@ -38,7 +45,8 @@ class AppStateManager extends ChangeNotifier {
   }
 
   void logout() {
-    _loggedIn = false;
+    _kloggedIn = false;
+    _tloggedIn = false;
     _initialized = false;
     _selectedTab = 0;
 
