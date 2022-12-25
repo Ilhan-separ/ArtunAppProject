@@ -38,7 +38,7 @@ class _ArtunAppState extends State<ArtunApp> {
         )
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Artun App',
         theme: ThemeData(
           primarySwatch: Colors.blueGrey,
         ),

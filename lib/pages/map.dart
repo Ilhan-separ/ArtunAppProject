@@ -90,7 +90,6 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: const Color(0xFF11112C),
         padding: EdgeInsets.all(16),
         child: Center(
           child: Column(
@@ -135,7 +134,7 @@ class _MapPageState extends State<MapPage> {
               ),
               Text(
                 'Distance : ${getDistanceBetween(_vazo.latitude, _evim.latitude, _vazo.longitude, _evim.longitude)} km',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.black),
               ),
             ],
           ),

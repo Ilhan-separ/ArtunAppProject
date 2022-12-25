@@ -40,10 +40,12 @@ class _KhomePageState extends State<KhomePage> {
     return Consumer<AppStateManager>(
       builder: (context, tabManager, child) => Scaffold(
         appBar: AppBar(
-          elevation: 1,
+          elevation: 0.3,
           title: Text(
-            "Home",
-            style: TextStyle(color: Color(0xFFF343085)),
+            "Artun App",
+            style: TextStyle(
+              color: Color(0xFFF343085),
+            ),
           ),
           backgroundColor: Colors.white,
         ),

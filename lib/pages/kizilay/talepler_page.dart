@@ -50,7 +50,7 @@ class _TaleplerPageState extends State<TaleplerPage> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.3), blurRadius: 2),
+                      color: Colors.black.withOpacity(0.3), blurRadius: 0.3),
                 ]),
             child: ListTile(
               shape: RoundedRectangleBorder(
