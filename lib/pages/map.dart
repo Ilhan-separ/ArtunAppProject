@@ -1,4 +1,3 @@
-import 'package:artun_flutter_project/pages/kizilay/Khome_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +21,7 @@ class _MapPageState extends State<MapPage> {
     mapController = controller;
   }
 
+  // Uzaklık Hesaplaması
   String getDistanceBetween(
       double lat1, double lat2, double lng1, double lng2) {
     var R = 6371;
@@ -44,13 +44,6 @@ class _MapPageState extends State<MapPage> {
 
   final LatLng _vazo = const LatLng(39.419589, 29.985422);
   LatLng _evim = const LatLng(39.438231, 29.981233);
-
-  final Set<Marker> _markers = {
-    const Marker(
-        markerId: MarkerId("vazo"), position: LatLng(39.419589, 29.985422)),
-    const Marker(
-        markerId: MarkerId("evim"), position: LatLng(39.438231, 29.981233)),
-  };
 
   List<LatLng> polyLineCoordinates = [];
 
@@ -79,6 +72,15 @@ class _MapPageState extends State<MapPage> {
       getPolyPoints();
     });
   }
+
+  void getCurrentLocation() {}
+
+  final Set<Marker> _markers = {
+    const Marker(
+        markerId: MarkerId("vazo"), position: LatLng(39.419589, 29.985422)),
+    const Marker(
+        markerId: MarkerId("evim"), position: LatLng(39.438231, 29.981233)),
+  };
 
   @override
   void initState() {
@@ -114,7 +116,7 @@ class _MapPageState extends State<MapPage> {
                       onMapCreated: _onMapCreated,
                       initialCameraPosition: CameraPosition(
                         target: _evim,
-                        zoom: 15,
+                        zoom: 14,
                       ),
                       polylines: {
                         Polyline(

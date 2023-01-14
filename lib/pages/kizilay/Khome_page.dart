@@ -1,3 +1,4 @@
+import 'package:artun_flutter_project/mapMockup.dart';
 import 'package:artun_flutter_project/model/app_pages.dart';
 import 'package:artun_flutter_project/model/app_state_maneger.dart';
 import 'package:artun_flutter_project/pages/map.dart';
@@ -32,7 +33,7 @@ class _KhomePageState extends State<KhomePage> {
   static List<Widget> pages = <Widget>[
     TaleplerPage(),
     KanStokPage(),
-    MapPage(),
+    MapMockupPage(),
   ];
 
   @override
