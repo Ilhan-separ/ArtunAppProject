@@ -1,5 +1,5 @@
 import 'package:artun_flutter_project/model/app_pages.dart';
-import 'package:artun_flutter_project/model/app_state_maneger.dart';
+import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,6 +27,13 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Text(
+                "Login Page",
+                style: Theme.of(context).textTheme.headline3,
+              ),
+              SizedBox(
+                height: 24,
+              ),
               ElevatedButton(
                 child: Text('LoginForK'),
                 onPressed: () async {
@@ -47,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
         ),
-      ), //TODO: iki ayrı kullanıcı girişi olucak.
+      ),
     );
   }
 }

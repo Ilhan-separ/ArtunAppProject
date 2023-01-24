@@ -1,13 +1,17 @@
-import 'package:artun_flutter_project/model/app_state_maneger.dart';
+import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'navigation/app_router.dart';
 
-void main() {
-  runApp(
-    const ArtunApp(),
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+  runApp(const ArtunApp());
 }
 
 class ArtunApp extends StatefulWidget {

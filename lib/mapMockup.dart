@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:artun_flutter_project/model/app_state_maneger.dart';
+import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -200,39 +200,48 @@ class _MapMockupPageState extends State<MapMockupPage>
     );
 
     return Scaffold(
-      body: Container(
-        padding: EdgeInsets.all(16),
-        child: Center(
-          child: Column(
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: googleMap,
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(16),
+          child: Center(
+            child: Column(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: googleMap,
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: 12,
-              ),
-              Text(
-                'Distance : ${getDistanceBetween(_vazo.latitude, _evim.latitude, _vazo.longitude, _evim.longitude)} km',
-                style: TextStyle(color: Colors.black),
-              ),
-              SizedBox(
-                height: 16,
-              ),
-              Visibility(
-                visible: tickerOver,
-                child: ElevatedButton(
-                    child: Text("Logout"),
-                    onPressed: () async {
-                      Provider.of<AppStateManager>(context, listen: false)
-                          .logout();
-                    }),
-              )
-            ],
+                SizedBox(
+                  height: 12,
+                ),
+                Text(
+                  'Distance : ${getDistanceBetween(_vazo.latitude, _evim.latitude, _vazo.longitude, _evim.longitude)} km',
+                  style: TextStyle(color: Colors.black),
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                Text("Detaylar da detaylar babam"),
+                Text("Talep Eden Yer"),
+                Text("Talep Edilen Detayları"),
+                Text("Estimated time maybe dk"),
+                SizedBox(
+                  height: 16,
+                ),
+                Visibility(
+                  visible: tickerOver,
+                  child: ElevatedButton(
+                      child: Text("Logout"),
+                      onPressed: () async {
+                        Provider.of<AppStateManager>(context, listen: false)
+                            .logout();
+                      }),
+                )
+              ],
+            ),
           ),
         ),
       ),

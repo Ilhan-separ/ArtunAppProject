@@ -1,5 +1,5 @@
 import 'package:artun_flutter_project/model/app_pages.dart';
-import 'package:artun_flutter_project/model/app_state_maneger.dart';
+import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

@@ -1,9 +1,9 @@
 import 'package:artun_flutter_project/model/app_pages.dart';
-import 'package:artun_flutter_project/model/app_state_maneger.dart';
-import 'package:artun_flutter_project/pages/kizilay/Khome_page.dart';
-import 'package:artun_flutter_project/pages/login.dart';
-import 'package:artun_flutter_project/pages/splash.dart';
-import 'package:artun_flutter_project/pages/talepci/t_home_page.dart';
+import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
+import 'package:artun_flutter_project/view/kizilay/kizilay_home_page.dart';
+import 'package:artun_flutter_project/view/login.dart';
+import 'package:artun_flutter_project/view/splash.dart';
+import 'package:artun_flutter_project/view/talepci/talepci_home_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter extends RouterDelegate
@@ -35,11 +35,14 @@ class AppRouter extends RouterDelegate
       //sayfa geçiş ayarları
       pages: [
         if (!appStateManager.isInitialied) SplashScreen.page(),
-        if (appStateManager.isInitialied && !appStateManager.isKLoggedIn)
+        if (appStateManager.isInitialied &&
+            !appStateManager.isKLoggedIn &&
+            !appStateManager.isTLoggedIn)
           LoginPage.page(),
-        if (appStateManager.isTLoggedIn) THomePage.page(),
+        if (appStateManager.isTLoggedIn)
+          THomePage.page(appStateManager.getTalepciSelectedTab),
         if (appStateManager.isKLoggedIn)
-          KhomePage.page(appStateManager.getSelectedTab),
+          KhomePage.page(appStateManager.getKizilaySelectedTab),
       ],
     );
   }

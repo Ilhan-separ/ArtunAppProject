@@ -2,22 +2,28 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-class AppTab {
+class KizilayTab {
   static const int talep = 0;
   static const int stok = 1;
-  static const int map = 2;
+}
+
+class TalepciTab {
+  static const int talepDetayi = 0;
+  static const int talepEtme = 1;
 }
 
 class AppStateManager extends ChangeNotifier {
   bool _initialized = false;
   bool _kloggedIn = false;
   bool _tloggedIn = false;
-  int _selectedTab = AppTab.talep;
+  int _kizilaySelectedTab = KizilayTab.talep;
+  int _talepciSelectedTab = TalepciTab.talepDetayi;
 
   bool get isInitialied => _initialized;
   bool get isKLoggedIn => _kloggedIn;
   bool get isTLoggedIn => _tloggedIn;
-  int get getSelectedTab => _selectedTab;
+  int get getKizilaySelectedTab => _kizilaySelectedTab;
+  int get getTalepciSelectedTab => _talepciSelectedTab;
 
   void initializedApp() {
     Timer(
@@ -39,16 +45,20 @@ class AppStateManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  void goToTab(index) {
-    _selectedTab = index;
+  void navigateKizilayTab(index) {
+    _kizilaySelectedTab = index;
+    notifyListeners();
+  }
+
+  void navigateTalebciTab(index) {
+    _talepciSelectedTab = index;
     notifyListeners();
   }
 
   void logout() {
     _kloggedIn = false;
     _tloggedIn = false;
-    _initialized = false;
-    _selectedTab = 0;
+    _kizilaySelectedTab = 0;
 
     initializedApp();
     notifyListeners();
