@@ -1,5 +1,5 @@
 import 'package:artun_flutter_project/model/app_pages.dart';
-import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
+import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:artun_flutter_project/view/kizilay/kizilay_home_page.dart';
 import 'package:artun_flutter_project/view/login.dart';
 import 'package:artun_flutter_project/view/splash.dart';

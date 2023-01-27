@@ -1,6 +1,7 @@
+import 'package:artun_flutter_project/constants.dart';
 import 'package:artun_flutter_project/mapMockup.dart';
 import 'package:artun_flutter_project/model/app_pages.dart';
-import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
+import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:artun_flutter_project/view/details_page.dart';
 
 import 'package:artun_flutter_project/view/kizilay/kan_stogu_page.dart';
@@ -69,10 +70,9 @@ class _KhomePageState extends State<KhomePage> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: widget.currentTab,
-          surfaceTintColor: Colors.transparent,
           height: MediaQuery.of(context).size.height * .09,
           elevation: 0,
-          backgroundColor: Colors.transparent,
+          backgroundColor: projectRed,
           onDestinationSelected: (index) {
             Provider.of<AppStateManager>(context, listen: false)
                 .navigateKizilayTab(index);

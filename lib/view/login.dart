@@ -1,5 +1,5 @@
 import 'package:artun_flutter_project/model/app_pages.dart';
-import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
+import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +19,15 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  String loginText = "Login Page";
+
+  Widget buildLoginText(context) {
+    return Text(
+      loginText,
+      style: Theme.of(context).textTheme.headlineMedium,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,10 +36,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "Login Page",
-                style: Theme.of(context).textTheme.headline3,
-              ),
+              buildLoginText(context),
               SizedBox(
                 height: 24,
               ),
@@ -38,7 +44,15 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text('LoginForK'),
                 onPressed: () async {
                   Provider.of<AppStateManager>(context, listen: false)
-                      .loginForK('mockUsername', 'mockPassword');
+                      .loginForK('Gezen Kızılay', 'mockPassword');
+                  final isAlert =
+                      Provider.of<AppStateManager>(context, listen: false)
+                          .isLoginThrowAlert;
+                  if (isAlert) {
+                    setState(() {
+                      loginText = "No Such User";
+                    });
+                  }
                 },
               ),
               SizedBox(

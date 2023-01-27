@@ -8,3 +8,5 @@ Map<int, Color> color = {
   50: Color.fromRGBO(244, 134, 52, .1),
   100: Color.fromRGBO(244, 134, 52, .2)
 };
+
+Color projectRed = Color(0xFFC33232);

@@ -1,4 +1,5 @@
-import 'package:artun_flutter_project/utilities/app_state_maneger.dart';
+import 'package:artun_flutter_project/constants.dart';
+import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';

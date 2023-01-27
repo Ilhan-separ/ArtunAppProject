@@ -1,4 +1,6 @@
 import 'package:artun_flutter_project/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 
 class KanTalepScreen extends StatefulWidget {
@@ -9,6 +11,9 @@ class KanTalepScreen extends StatefulWidget {
 }
 
 class KanTalepScreenState extends State<KanTalepScreen> {
+  final db = FirebaseFirestore.instance.collection("Talepler");
+  final dbTalepMap = <String, String?>{};
+
   final String _kanGrubu = "Kan Grubunu Seçiniz:";
   final String _kanUnitesi = "Kaç Ünite Olacağını Şeçiniz:";
   final List<String> _kanGrubuListesi = [
@@ -55,7 +60,7 @@ class KanTalepScreenState extends State<KanTalepScreen> {
               children: [
                 Text(
                   _kanGrubu,
-                  style: Theme.of(context).textTheme.headline6,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 customSizedBox(
                   DropdownButtonFormField<String>(
@@ -88,7 +93,7 @@ class KanTalepScreenState extends State<KanTalepScreen> {
               children: [
                 Text(
                   _kanUnitesi,
-                  style: Theme.of(context).textTheme.headline6,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 customSizedBox(
                   DropdownButtonFormField<String>(
@@ -157,7 +162,16 @@ class KanTalepScreenState extends State<KanTalepScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                dbTalepMap.addAll({
+                  "kanGrubu": _selectedKanTipi,
+                  "unite": _selectedUniteSayisi,
+                });
+                db
+                    .add(dbTalepMap)
+                    .then((value) => print("id is : ${value.id}"));
+                Navigator.of(context).pop();
+              },
               child: Text(
                 "Talep Et",
                 style: TextStyle(

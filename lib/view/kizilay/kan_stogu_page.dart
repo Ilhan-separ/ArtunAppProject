@@ -1,9 +1,10 @@
-import 'dart:math';
-
+import 'package:artun_flutter_project/constants.dart';
 import 'package:artun_flutter_project/model/kizilay_model.dart';
+import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
 class KanStokPage extends StatefulWidget {
   const KanStokPage({super.key});
@@ -13,13 +14,20 @@ class KanStokPage extends StatefulWidget {
 }
 
 class _KanStokPageState extends State<KanStokPage> {
-  final db = FirebaseFirestore.instance;
-  Stream<DocumentSnapshot> kizilayRef = FirebaseFirestore.instance
-      .collection("KizilayUsers")
-      .doc("User1")
-      .snapshots();
+  String user = "a";
 
-//Tek seferlik okumalar için
+  final db = FirebaseFirestore.instance;
+
+  Stream<DocumentSnapshot<Object?>>? dbCall(user) {
+    Stream<DocumentSnapshot> kizilayRef = FirebaseFirestore.instance
+        .collection("KizilayUsers")
+        .doc(user) //Döküman ismi giriş yapışınca telefonda tutulacak.
+        .snapshots();
+
+    return kizilayRef;
+  }
+
+//Tek seferlik okumalar için -unused
   Future<Kizilay?> dbRead() async {
     final kizilayRef = db.collection("KizilayUsers").doc("User1").withConverter(
           fromFirestore: Kizilay.fromFirestore,
@@ -50,37 +58,87 @@ class _KanStokPageState extends State<KanStokPage> {
 
   @override
   Widget build(BuildContext context) {
+    user = Provider.of<AppStateManager>(context).getCurrentUser;
     return StreamBuilder(
-      stream: kizilayRef,
+      stream: dbCall(user),
       builder: (context, snapshot) {
-        final docData = snapshot.data as DocumentSnapshot;
-        final kanList = docData['kanStogu'] as Map<String, dynamic>;
-
-        return ListView.separated(
-          itemCount: bloodList.length,
-          separatorBuilder: (context, index) {
-            return const Divider(
-              height: 12,
-              thickness: 2,
-            );
-          },
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(
-                bloodList[index],
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 42,
-                    color: Color(0xFFF48634),
-                  ),
-                ),
-              ),
-              //trailing: Text("${snapshot.data?.stok![bloodList[index]]}",
-              trailing: Text("${kanList[bloodList[index]]}",
-                  style: TextStyle(fontSize: 12)),
-            );
-          },
-        );
+        return snapshot.hasData
+            ? ListView.separated(
+                padding: EdgeInsets.all(12),
+                itemCount: bloodList.length,
+                separatorBuilder: (context, index) {
+                  return const SizedBox(
+                    height: 24,
+                  );
+                },
+                itemBuilder: (context, index) {
+                  final docData = snapshot.data as DocumentSnapshot;
+                  final fromFirebaseKanStogu =
+                      docData['kanStogu'] as Map<String, dynamic>;
+                  return Container(
+                    //Bütün Tile Containerı
+                    padding:
+                        EdgeInsets.only(top: 10, bottom: 10, left: 4, right: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(
+                        color: projectRed,
+                        width: 1,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                            color: Color.fromARGB(50, 0, 0, 0),
+                            offset: Offset(1, 2),
+                            blurRadius: 3.2,
+                            spreadRadius: 0.2),
+                      ],
+                    ),
+                    child: ListTile(
+                      leading: Container(
+                        //Kan Gurubu Containerı
+                        width: 64,
+                        decoration: BoxDecoration(
+                          color: Colors.cyan,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: const [
+                            BoxShadow(
+                                color: Color.fromARGB(50, 0, 0, 0),
+                                offset: Offset(1, 2),
+                                blurRadius: 3.2,
+                                spreadRadius: 0.2),
+                          ],
+                        ),
+                        child: Center(
+                          child: SizedBox(
+                            child: Text(
+                              bloodList[index],
+                              style: GoogleFonts.roboto(
+                                textStyle: const TextStyle(
+                                  fontSize: 28,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      trailing: Text(
+                        "${fromFirebaseKanStogu[bloodList[index]]}",
+                        style: GoogleFonts.roboto(
+                          textStyle: TextStyle(
+                              fontSize: 28,
+                              color: projectRed,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              )
+            : Center(
+                child: CircularProgressIndicator(),
+              );
       },
     );
   }

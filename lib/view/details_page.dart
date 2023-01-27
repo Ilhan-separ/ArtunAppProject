@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 import 'dart:math' as math;
 import '../constants.dart';
-import '../utilities/app_state_maneger.dart';
+import '../utilities/app_state_manager.dart';
 
 class DetailsPage extends StatefulWidget {
   const DetailsPage({super.key});
@@ -97,21 +97,23 @@ class _DetailsPageState extends State<DetailsPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text(
+        title: const Text(
           "Detaylar",
           style: TextStyle(color: Colors.black),
         ),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         backgroundColor: Colors.transparent,
         leading: IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_back,
               color: Colors.black,
             ),
             onPressed: () {
               if (!_isBackClicked) {
-                _isBackClicked = !_isBackClicked;
-                return Navigator.of(context).pop();
+                setState(() {
+                  _isBackClicked = !_isBackClicked;
+                });
+                Navigator.of(context).pop();
               }
             }),
         actions: [
