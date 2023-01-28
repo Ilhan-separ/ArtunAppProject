@@ -40,25 +40,27 @@ class _THomePageState extends State<THomePage> {
     return Consumer<AppStateManager>(
       builder: (context, tabManager, child) => Scaffold(
         appBar: AppBar(
-          elevation: 0,
+          elevation: .5,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
-          backgroundColor: Colors.transparent,
+          backgroundColor: projectRed,
           actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.person_outline,
-                color: Colors.black,
-              ),
-              color: Colors.black,
-              onPressed: () {
-                Provider.of<AppStateManager>(context, listen: false).logout();
-              },
-            )
+            PopupMenuButton(
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  child: Text("Çıkış"),
+                  onTap: () {
+                    Provider.of<AppStateManager>(context, listen: false)
+                        .logout();
+                  },
+                )
+              ],
+            ),
           ],
-          title: const Text(
-            "Talepci Ekranı",
+          title: Text(
+            Provider.of<AppStateManager>(context, listen: false)
+                .getCurrentUserName,
             style: TextStyle(
-              color: Colors.black,
+              color: Colors.white,
             ),
           ),
         ),
@@ -71,8 +73,8 @@ class _THomePageState extends State<THomePage> {
           surfaceTintColor: Colors.white,
           shadowColor: Colors.white,
           height: MediaQuery.of(context).size.height * .09,
-          elevation: 0,
-          backgroundColor: Color(0xFFC33232),
+          elevation: .5,
+          backgroundColor: projectRed,
           onDestinationSelected: (index) {
             Provider.of<AppStateManager>(context, listen: false)
                 .navigateTalebciTab(index);

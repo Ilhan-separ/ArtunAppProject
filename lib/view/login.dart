@@ -20,6 +20,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   String loginText = "Login Page";
+  bool isAlert = false;
 
   Widget buildLoginText(context) {
     return Text(
@@ -44,10 +45,9 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text('LoginForK'),
                 onPressed: () async {
                   Provider.of<AppStateManager>(context, listen: false)
-                      .loginForK('Gezen Kızılay', 'mockPassword');
-                  final isAlert =
-                      Provider.of<AppStateManager>(context, listen: false)
-                          .isLoginThrowAlert;
+                      .loginForK('İlçe Kızılay', 'mockPassword');
+                  isAlert = Provider.of<AppStateManager>(context, listen: false)
+                      .isLoginThrowAlert;
                   if (isAlert) {
                     setState(() {
                       loginText = "No Such User";
@@ -62,7 +62,14 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text('LoginForT'),
                 onPressed: () async {
                   Provider.of<AppStateManager>(context, listen: false)
-                      .loginForT('mockUsername', 'mockPassword');
+                      .loginForT('İlçe Hastane', 'mockPassword');
+                  isAlert = Provider.of<AppStateManager>(context, listen: false)
+                      .isLoginThrowAlert;
+                  if (isAlert) {
+                    setState(() {
+                      loginText = "No Such User";
+                    });
+                  }
                 },
               ),
             ],

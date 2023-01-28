@@ -58,7 +58,7 @@ class _KanStokPageState extends State<KanStokPage> {
 
   @override
   Widget build(BuildContext context) {
-    user = Provider.of<AppStateManager>(context).getCurrentUser;
+    user = Provider.of<AppStateManager>(context).getCurrentUserID;
     return StreamBuilder(
       stream: dbCall(user),
       builder: (context, snapshot) {
@@ -99,7 +99,7 @@ class _KanStokPageState extends State<KanStokPage> {
                         //Kan Gurubu Containerı
                         width: 64,
                         decoration: BoxDecoration(
-                          color: Colors.cyan,
+                          color: projectCyan,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: const [
                             BoxShadow(
@@ -115,9 +115,9 @@ class _KanStokPageState extends State<KanStokPage> {
                               bloodList[index],
                               style: GoogleFonts.roboto(
                                 textStyle: const TextStyle(
-                                  fontSize: 28,
-                                  color: Colors.white,
-                                ),
+                                    fontSize: 28,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500),
                               ),
                             ),
                           ),

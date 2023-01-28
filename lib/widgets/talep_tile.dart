@@ -21,11 +21,18 @@ class TalepTile extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
-          color: projectOrange[100],
-          borderRadius: BorderRadius.circular(
-            12,
-          ),
-        ),
+            color: projectCyan,
+            borderRadius: BorderRadius.circular(
+              24,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0xFF207378),
+                offset: Offset(1, 2),
+                spreadRadius: .3,
+                blurRadius: 4.2,
+              ),
+            ]),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

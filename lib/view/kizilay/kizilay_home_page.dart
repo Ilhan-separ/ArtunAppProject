@@ -42,25 +42,31 @@ class _KhomePageState extends State<KhomePage> {
     return Consumer<AppStateManager>(
       builder: (context, tabManager, child) => Scaffold(
         appBar: AppBar(
-          elevation: 0,
+          elevation: .5,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.grey[100],
           actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.person_outline,
-                color: Colors.black,
+            PopupMenuButton(
+              icon: Icon(
+                Icons.more_vert,
+                color: projectRed,
               ),
-              color: Colors.black,
-              onPressed: () {
-                Provider.of<AppStateManager>(context, listen: false).logout();
-              },
-            )
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  child: Text("Çıkış"),
+                  onTap: () {
+                    Provider.of<AppStateManager>(context, listen: false)
+                        .logout();
+                  },
+                )
+              ],
+            ),
           ],
-          title: const Text(
-            "Kızılay Ekranı",
+          title: Text(
+            Provider.of<AppStateManager>(context, listen: false)
+                .getCurrentUserName,
             style: TextStyle(
-              color: Colors.black,
+              color: projectRed,
             ),
           ),
         ),
@@ -71,21 +77,33 @@ class _KhomePageState extends State<KhomePage> {
         bottomNavigationBar: NavigationBar(
           selectedIndex: widget.currentTab,
           height: MediaQuery.of(context).size.height * .09,
-          elevation: 0,
-          backgroundColor: projectRed,
+          elevation: .5,
+          backgroundColor: Colors.grey[100],
           onDestinationSelected: (index) {
             Provider.of<AppStateManager>(context, listen: false)
                 .navigateKizilayTab(index);
           },
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              selectedIcon: Icon(Icons.home),
-              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(
+                Icons.home,
+                color: projectRed,
+              ),
+              icon: Icon(
+                Icons.home_outlined,
+                color: projectRed,
+              ),
               label: "Talepler",
             ),
             NavigationDestination(
-              selectedIcon: Icon(Icons.church_sharp),
-              icon: Icon(Icons.church_outlined),
+              selectedIcon: Icon(
+                Icons.church_sharp,
+                color: projectRed,
+              ),
+              icon: Icon(
+                Icons.church_outlined,
+                color: projectRed,
+              ),
               label: "Kan Stoğu ",
             ),
           ],

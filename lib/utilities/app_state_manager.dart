@@ -19,7 +19,8 @@ class AppStateManager extends ChangeNotifier {
   bool _tloggedIn = false;
   int _kizilaySelectedTab = KizilayTab.talep;
   int _talepciSelectedTab = TalepciTab.talepDetayi;
-  String _currentUser = "aynen";
+  String _currentUserID = "";
+  String _currentUserName = "";
   bool _throwLoginAlert = false;
 
   bool get isInitialied => _initialized;
@@ -27,7 +28,8 @@ class AppStateManager extends ChangeNotifier {
   bool get isTLoggedIn => _tloggedIn;
   int get getKizilaySelectedTab => _kizilaySelectedTab;
   int get getTalepciSelectedTab => _talepciSelectedTab;
-  String get getCurrentUser => _currentUser;
+  String get getCurrentUserID => _currentUserID;
+  String get getCurrentUserName => _currentUserName;
   bool get isLoginThrowAlert => _throwLoginAlert;
 
   void initializedApp() {
@@ -46,13 +48,14 @@ class AppStateManager extends ChangeNotifier {
       query.docs.forEach((element) {
         data = element.data() as Map<String, dynamic>;
         if (username == data["name"]) {
-          _currentUser = data["id"];
+          _currentUserID = data["id"];
+          _currentUserName = data["name"];
           _throwLoginAlert = false;
           _kloggedIn = true;
           notifyListeners();
         }
       });
-      if (_currentUser.contains("a")) {
+      if (_currentUserID.contains("")) {
         _throwLoginAlert = true;
         notifyListeners();
       }
@@ -60,8 +63,23 @@ class AppStateManager extends ChangeNotifier {
   }
 
   void loginForT(String username, String password) {
-    _tloggedIn = true;
-    notifyListeners();
+    Map<String, dynamic> data;
+    FirebaseFirestore.instance.collection("TalepciUsers").get().then((query) {
+      query.docs.forEach((element) {
+        data = element.data() as Map<String, dynamic>;
+        if (username == data["name"]) {
+          _currentUserID = data["id"];
+          _currentUserName = data["name"];
+          _throwLoginAlert = false;
+          _tloggedIn = true;
+          notifyListeners();
+        }
+      });
+      if (_currentUserID.contains("")) {
+        _throwLoginAlert = true;
+        notifyListeners();
+      }
+    });
   }
 
   void navigateKizilayTab(index) {
@@ -79,7 +97,9 @@ class AppStateManager extends ChangeNotifier {
     _tloggedIn = false;
     _kizilaySelectedTab = 0;
     _talepciSelectedTab = 0;
-    _currentUser = "aynen";
+    _throwLoginAlert = false;
+    _currentUserID = "";
+    _currentUserName = "";
 
     initializedApp();
     notifyListeners();

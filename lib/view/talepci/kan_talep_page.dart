@@ -1,7 +1,9 @@
 import 'package:artun_flutter_project/constants.dart';
+import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class KanTalepScreen extends StatefulWidget {
   const KanTalepScreen({super.key});
@@ -11,8 +13,10 @@ class KanTalepScreen extends StatefulWidget {
 }
 
 class KanTalepScreenState extends State<KanTalepScreen> {
-  final db = FirebaseFirestore.instance.collection("Talepler");
+  final taleplerRef = FirebaseFirestore.instance.collection("Talepler");
+  final kizilayRef = FirebaseFirestore.instance.collection("KizilayUsers");
   final dbTalepMap = <String, String?>{};
+  Map<int, dynamic>? dbKizilayMap;
 
   final String _kanGrubu = "Kan Grubunu Seçiniz:";
   final String _kanUnitesi = "Kaç Ünite Olacağını Şeçiniz:";
@@ -39,6 +43,8 @@ class KanTalepScreenState extends State<KanTalepScreen> {
 
   String? _selectedKanTipi = "A+";
   String? _selectedUniteSayisi = '1';
+  String _currentUser = "";
+  String _currentUserName = "";
 
   Widget customSizedBox(Widget child) {
     return SizedBox(
@@ -162,12 +168,32 @@ class KanTalepScreenState extends State<KanTalepScreen> {
               ),
             ),
             TextButton(
+              //!!!!Firebase talep listesi oluşturan  textBox!!!!
+
               onPressed: () {
+                _currentUser =
+                    Provider.of<AppStateManager>(context, listen: false)
+                        .getCurrentUserID;
+                _currentUserName =
+                    Provider.of<AppStateManager>(context, listen: false)
+                        .getCurrentUserName;
+
+                kizilayRef.get().then(
+                  (documents) {
+                    dbKizilayMap = documents.docs.asMap();
+                  },
+                  onError: (e) => print("Error getting document: $e"),
+                );
+                //TODO: Aga bu çok sallantılı nasıl yapılacağına bir daha bak.
                 dbTalepMap.addAll({
                   "kanGrubu": _selectedKanTipi,
                   "unite": _selectedUniteSayisi,
+                  "talepEdenID": _currentUser,
+                  "talepEden": _currentUserName,
+                  "kizilay": dbKizilayMap![1]["name"],
+                  "kizilayID": dbKizilayMap![1]["id"],
                 });
-                db
+                taleplerRef
                     .add(dbTalepMap)
                     .then((value) => print("id is : ${value.id}"));
                 Navigator.of(context).pop();

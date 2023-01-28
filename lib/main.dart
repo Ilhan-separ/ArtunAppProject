@@ -45,7 +45,7 @@ class _ArtunAppState extends State<ArtunApp> {
       child: MaterialApp(
         title: 'Artun App',
         theme: ThemeData(
-          primarySwatch: Colors.blueGrey,
+          primarySwatch: Colors.red,
         ),
         home: Router(
           routerDelegate: _appRouter,
