@@ -1,3 +1,4 @@
+import 'package:artun_flutter_project/constants.dart';
 import 'package:artun_flutter_project/model/app_pages.dart';
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:flutter/material.dart';
@@ -29,53 +30,164 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  String kullanciAdi = "";
+  String password = "";
   @override
   Widget build(BuildContext context) {
+    isAlert = Provider.of<AppStateManager>(
+      context,
+    ).isLoginThrowAlert;
     return Scaffold(
-      body: Container(
-        child: Center(
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              buildLoginText(context),
-              SizedBox(
-                height: 24,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  SizedBox(
+                    child: Image.asset("assets/ic_login_topImage.png"),
+                    height: MediaQuery.of(context).size.height * .25,
+                  ),
+                ],
+              ),
+              Image.asset(
+                "assets/ic_login_mainImage.png",
+                height: MediaQuery.of(context).size.height * .15,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          kullanciAdi = value;
+                        });
+                      },
+                      decoration: _customTextFieldDecoration("Kullanıcı Adı"),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          password = value;
+                        });
+                      },
+                      obscureText: true,
+                      decoration: _customTextFieldDecoration("Şifre"),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    isAlert ? Text("Yanlış bilgi girildi.") : Center(),
+                  ],
+                ),
               ),
               ElevatedButton(
-                child: Text('LoginForK'),
-                onPressed: () async {
-                  Provider.of<AppStateManager>(context, listen: false)
-                      .loginForK('İlçe Kızılay', 'mockPassword');
-                  isAlert = Provider.of<AppStateManager>(context, listen: false)
-                      .isLoginThrowAlert;
-                  if (isAlert) {
-                    setState(() {
-                      loginText = "No Such User";
-                    });
-                  }
-                },
-              ),
-              SizedBox(
-                height: 12,
-              ),
-              ElevatedButton(
-                child: Text('LoginForT'),
-                onPressed: () async {
-                  Provider.of<AppStateManager>(context, listen: false)
-                      .loginForT('İlçe Hastane', 'mockPassword');
-                  isAlert = Provider.of<AppStateManager>(context, listen: false)
-                      .isLoginThrowAlert;
-                  if (isAlert) {
-                    setState(() {
-                      loginText = "No Such User";
-                    });
-                  }
-                },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: projectCyan,
+                  ),
+                  onPressed: () {
+                    if (kullanciAdi.contains("k")) {
+                      _kizilayLoginOnPressed(context, kullanciAdi, password);
+                    } else {
+                      _talepciLoginOnPressed(context, kullanciAdi, password);
+                    }
+                  },
+                  child: Text("Giriş")),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //   children: [
+              //     ElevatedButton(
+              //       child: Text('Merkez Kızılay'),
+              //       onPressed: () async {
+              //         _kizilayLoginOnPressed(context, 'Merkez Kızılay');
+              //       },
+              //     ),
+              //     ElevatedButton(
+              //       child: Text('İlçe Kızılay'),
+              //       onPressed: () async {
+              //         _kizilayLoginOnPressed(context, 'İlçe Kızılay');
+              //       },
+              //     ),
+              //     ElevatedButton(
+              //       child: Text('Gezen Kızılay'),
+              //       onPressed: () async {
+              //         _kizilayLoginOnPressed(context, 'Gezen Kızılay');
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // SizedBox(
+              //   height: 12,
+              // ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //   children: [
+              //     ElevatedButton(
+              //       child: Text('Merkez Hastane'),
+              //       onPressed: () async {
+              //         _talepciLoginOnPressed(context, "Merkez Hastane");
+              //       },
+              //     ),
+              //     ElevatedButton(
+              //       child: Text('İlçe Hastane'),
+              //       onPressed: () async {
+              //         _talepciLoginOnPressed(context, 'İlçe Hastane');
+              //       },
+              //     ),
+              //   ],
+              // ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    child: Image.asset("assets/ic_login_bottomImage.png"),
+                    height: MediaQuery.of(context).size.height * .25,
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  InputDecoration _customTextFieldDecoration(String label) {
+    return InputDecoration(
+      alignLabelWithHint: true,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: BorderSide(
+          color: projectRed,
+        ),
+      ),
+      floatingLabelAlignment: FloatingLabelAlignment.start,
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      label: Text(label),
+      isDense: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+      ),
+    );
+  }
+
+  void _talepciLoginOnPressed(
+      BuildContext context, String kullanciAdi, String password) {
+    print("login $kullanciAdi");
+    Provider.of<AppStateManager>(context, listen: false)
+        .loginForT(kullanciAdi, password);
+  }
+
+  void _kizilayLoginOnPressed(
+      BuildContext context, String kullanciAdi, String password) {
+    Provider.of<AppStateManager>(context, listen: false)
+        .loginForK(kullanciAdi, password);
   }
 }

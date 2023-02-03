@@ -21,28 +21,10 @@ class _KanStokPageState extends State<KanStokPage> {
   Stream<DocumentSnapshot<Object?>>? dbCall(user) {
     Stream<DocumentSnapshot> kizilayRef = FirebaseFirestore.instance
         .collection("KizilayUsers")
-        .doc(user) //Döküman ismi giriş yapışınca telefonda tutulacak.
+        .doc(user)
         .snapshots();
 
     return kizilayRef;
-  }
-
-//Tek seferlik okumalar için -unused
-  Future<Kizilay?> dbRead() async {
-    final kizilayRef = db.collection("KizilayUsers").doc("User1").withConverter(
-          fromFirestore: Kizilay.fromFirestore,
-          toFirestore: (Kizilay kizilay, _) => kizilay.toFirestore(),
-        );
-
-    // DATAYI ÇEKİP PRİNTLİYOR
-    // final kizilay = db.collection("KizilayUsers");
-    // await kizilay.doc("User1").get().then(
-    //   (DocumentSnapshot doc) {
-    //     final data = doc.data() as Map<String, dynamic>;
-    //     print(data);
-    //   },
-    //   onError: (e) => print("Erorrr!! : $e"),
-    // );
   }
 
   List<String> bloodList = [
@@ -58,7 +40,8 @@ class _KanStokPageState extends State<KanStokPage> {
 
   @override
   Widget build(BuildContext context) {
-    user = Provider.of<AppStateManager>(context).getCurrentUserID;
+    user =
+        Provider.of<AppStateManager>(context, listen: false).getCurrentUserID;
     return StreamBuilder(
       stream: dbCall(user),
       builder: (context, snapshot) {

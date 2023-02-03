@@ -3,6 +3,7 @@ import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 class KanTalepScreen extends StatefulWidget {
@@ -15,8 +16,10 @@ class KanTalepScreen extends StatefulWidget {
 class KanTalepScreenState extends State<KanTalepScreen> {
   final taleplerRef = FirebaseFirestore.instance.collection("Talepler");
   final kizilayRef = FirebaseFirestore.instance.collection("KizilayUsers");
-  final dbTalepMap = <String, String?>{};
+  final dbTalepMap = <String, dynamic?>{};
   Map<int, dynamic>? dbKizilayMap;
+  double _currentUserLat = 1;
+  double _currentUserLng = 1;
 
   final String _kanGrubu = "Kan Grubunu Seçiniz:";
   final String _kanUnitesi = "Kaç Ünite Olacağını Şeçiniz:";
@@ -70,7 +73,7 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                 ),
                 customSizedBox(
                   DropdownButtonFormField<String>(
-                    style: TextStyle(fontSize: 20, color: projectOrange),
+                    style: TextStyle(fontSize: 20, color: projectCyan),
                     decoration: InputDecoration(
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -103,7 +106,7 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                 ),
                 customSizedBox(
                   DropdownButtonFormField<String>(
-                    style: TextStyle(fontSize: 20, color: projectOrange),
+                    style: TextStyle(fontSize: 20, color: projectCyan),
                     decoration: InputDecoration(
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -170,15 +173,21 @@ class KanTalepScreenState extends State<KanTalepScreen> {
             TextButton(
               //!!!!Firebase talep listesi oluşturan  textBox!!!!
 
-              onPressed: () {
+              onPressed: () async {
                 _currentUser =
                     Provider.of<AppStateManager>(context, listen: false)
                         .getCurrentUserID;
                 _currentUserName =
                     Provider.of<AppStateManager>(context, listen: false)
                         .getCurrentUserName;
+                _currentUserLat =
+                    Provider.of<AppStateManager>(context, listen: false)
+                        .getCurrentUserLat;
+                _currentUserLng =
+                    Provider.of<AppStateManager>(context, listen: false)
+                        .getCurrentUserLng;
 
-                kizilayRef.get().then(
+                await kizilayRef.get().then(
                   (documents) {
                     dbKizilayMap = documents.docs.asMap();
                   },
@@ -190,8 +199,12 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                   "unite": _selectedUniteSayisi,
                   "talepEdenID": _currentUser,
                   "talepEden": _currentUserName,
+                  "talepEdenLat": _currentUserLat,
+                  "talepEdenLng": _currentUserLng,
                   "kizilay": dbKizilayMap![1]["name"],
                   "kizilayID": dbKizilayMap![1]["id"],
+                  "kizilayLat": dbKizilayMap![1]["lat"],
+                  "kizilayLng": dbKizilayMap![1]["lng"],
                 });
                 taleplerRef
                     .add(dbTalepMap)

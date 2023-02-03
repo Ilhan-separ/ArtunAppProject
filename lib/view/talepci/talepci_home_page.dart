@@ -42,9 +42,13 @@ class _THomePageState extends State<THomePage> {
         appBar: AppBar(
           elevation: .5,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
-          backgroundColor: projectRed,
+          backgroundColor: Colors.grey[100],
           actions: [
             PopupMenuButton(
+              icon: Icon(
+                Icons.more_vert,
+                color: projectRed,
+              ),
               itemBuilder: (context) => [
                 PopupMenuItem(
                   child: Text("Çıkış"),
@@ -60,7 +64,7 @@ class _THomePageState extends State<THomePage> {
             Provider.of<AppStateManager>(context, listen: false)
                 .getCurrentUserName,
             style: TextStyle(
-              color: Colors.white,
+              color: projectRed,
             ),
           ),
         ),
@@ -70,35 +74,35 @@ class _THomePageState extends State<THomePage> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: widget.currentTab,
-          surfaceTintColor: Colors.white,
+          surfaceTintColor: projectRed,
           shadowColor: Colors.white,
           height: MediaQuery.of(context).size.height * .09,
           elevation: .5,
-          backgroundColor: projectRed,
+          backgroundColor: Colors.grey[100],
           onDestinationSelected: (index) {
             Provider.of<AppStateManager>(context, listen: false)
                 .navigateTalebciTab(index);
           },
-          destinations: const [
+          destinations: [
             NavigationDestination(
               selectedIcon: Icon(
                 Icons.home,
-                color: Colors.white,
+                color: projectRed,
               ),
               icon: Icon(
                 Icons.home_outlined,
-                color: Colors.white,
+                color: projectRed,
               ),
               label: "Talepler",
             ),
             NavigationDestination(
               selectedIcon: Icon(
                 Icons.playlist_add_circle_sharp,
-                color: Colors.white,
+                color: projectRed,
               ),
               icon: Icon(
                 Icons.playlist_add_circle_outlined,
-                color: Colors.white,
+                color: projectRed,
               ),
               label: "Kan Talep ",
             ),

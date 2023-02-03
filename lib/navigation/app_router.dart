@@ -1,10 +1,11 @@
-import 'package:artun_flutter_project/model/app_pages.dart';
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:artun_flutter_project/view/kizilay/kizilay_home_page.dart';
 import 'package:artun_flutter_project/view/login.dart';
 import 'package:artun_flutter_project/view/splash.dart';
 import 'package:artun_flutter_project/view/talepci/talepci_home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session_manager/flutter_session_manager.dart';
+import 'package:provider/provider.dart';
 
 class AppRouter extends RouterDelegate
     with ChangeNotifier, PopNavigatorRouterDelegateMixin {
@@ -26,6 +27,11 @@ class AppRouter extends RouterDelegate
     //daha fazla eklenebilir.
     super.dispose();
   }
+
+  bool _isLoggedIn = false;
+  bool _isKizilayLogged = false;
+  bool _isTalepciLogged = false;
+  String user = "";
 
   @override
   Widget build(BuildContext context) {

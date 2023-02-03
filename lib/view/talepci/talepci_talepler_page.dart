@@ -1,4 +1,4 @@
-import 'package:artun_flutter_project/mapMockup.dart';
+import 'package:artun_flutter_project/constants.dart';
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:artun_flutter_project/view/details_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,7 +21,30 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
 
   String _currentUserId = "";
   bool lateCheck = false;
+  bool isTalepExist = true;
   Map<int, Map<String, dynamic>> userSpesificTalepList = {};
+
+  Future<void> userSpesificListFunc() async {
+    await FirebaseFirestore.instance
+        .collection("Talepler")
+        .where("talepEdenID", isEqualTo: _currentUserId)
+        .get()
+        .then((value) async {
+      talepListLenght = value.docs.length;
+      for (var i = 0; i < talepListLenght!; i++) {
+        userSpesificTalepList.addAll({i: value.docs[i].data()});
+      }
+    });
+    if (userSpesificTalepList.isEmpty) {
+      setState(() {
+        isTalepExist = false;
+      });
+    } else {
+      setState(() {
+        isTalepExist = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,19 +53,8 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
         builder: (context, snapshot) {
           _currentUserId =
               Provider.of<AppStateManager>(context).getCurrentUserID;
-          FirebaseFirestore.instance
-              .collection("Talepler")
-              .where("talepEdenID", isEqualTo: _currentUserId)
-              .get()
-              .then((value) async {
-            talepListLenght = value.docs.length;
-            for (var i = 0; i < talepListLenght!; i++) {
-              userSpesificTalepList.addAll({i: value.docs[i].data()});
-            }
-            print(userSpesificTalepList);
-          });
-          print("aaaaaaaaa $talepListLenght");
-          print("aaaaaaaaa $_currentUserId");
+
+          userSpesificListFunc();
 
           if (snapshot.hasData &&
               userSpesificTalepList != null &&
@@ -52,32 +64,53 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
             lateCheck = false;
           }
 
-          return lateCheck
-              ? GridView.builder(
-                  itemCount: talepListLenght,
-                  padding: const EdgeInsets.only(
-                      left: 12.0, right: 12.0, bottom: 8.0, top: 4.0),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2),
-                  itemBuilder: (context, index) {
-                    return InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const DetailsPage(),
-                          ),
-                        );
-                      },
-                      child: TalepTile(
-                        talepEden: userSpesificTalepList[index]!["kanGrubu"],
-                        talepDetayi: "Talep Detayları...",
-                      ),
-                    );
-                  },
-                )
-              : Center(
-                  child: CircularProgressIndicator(),
-                );
+          if (!isTalepExist) {
+            return Center(
+              child: Text(
+                "Talep Bulunmuyor",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            );
+          } else {
+            return lateCheck
+                ? GridView.builder(
+                    itemCount: talepListLenght,
+                    padding: const EdgeInsets.only(
+                        left: 12.0, right: 12.0, bottom: 8.0, top: 4.0),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2),
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => DetailsPage(
+                                userSpesicifTalepList:
+                                    userSpesificTalepList[index],
+                                kizilayLat: userSpesificTalepList[index]![
+                                    dbDocKizilayLat],
+                                kizilayLng: userSpesificTalepList[index]![
+                                    dbDocKizilayLng],
+                                talepciLat: userSpesificTalepList[index]![
+                                    dbDocTalepEdenLat],
+                                talepciLng: userSpesificTalepList[index]![
+                                    dbDocTalepEdenLng],
+                              ),
+                            ),
+                          );
+                        },
+                        child: TalepTile(
+                          talepEden: userSpesificTalepList[index]!["kanGrubu"],
+                          talepDetayi: "Talep Detayları...",
+                        ),
+                      );
+                    },
+                  )
+                : const Center(
+                    child: CircularProgressIndicator(),
+                  );
+          }
         });
   }
 }
