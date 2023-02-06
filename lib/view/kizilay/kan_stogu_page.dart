@@ -40,6 +40,7 @@ class _KanStokPageState extends State<KanStokPage> {
 
   @override
   Widget build(BuildContext context) {
+    Size mediaSize = MediaQuery.of(context).size;
     user =
         Provider.of<AppStateManager>(context, listen: false).getCurrentUserID;
     return StreamBuilder(
@@ -50,8 +51,8 @@ class _KanStokPageState extends State<KanStokPage> {
                 padding: EdgeInsets.all(12),
                 itemCount: bloodList.length,
                 separatorBuilder: (context, index) {
-                  return const SizedBox(
-                    height: 24,
+                  return SizedBox(
+                    height: mediaSize.height * .030,
                   );
                 },
                 itemBuilder: (context, index) {
@@ -80,7 +81,7 @@ class _KanStokPageState extends State<KanStokPage> {
                     child: ListTile(
                       leading: Container(
                         //Kan Gurubu Containerı
-                        width: 64,
+                        width: mediaSize.width * .17,
                         decoration: BoxDecoration(
                           color: projectCyan,
                           borderRadius: BorderRadius.circular(12),
@@ -97,8 +98,8 @@ class _KanStokPageState extends State<KanStokPage> {
                             child: Text(
                               bloodList[index],
                               style: GoogleFonts.roboto(
-                                textStyle: const TextStyle(
-                                    fontSize: 28,
+                                textStyle: TextStyle(
+                                    fontSize: mediaSize.width * .066,
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500),
                               ),
@@ -110,7 +111,7 @@ class _KanStokPageState extends State<KanStokPage> {
                         "${fromFirebaseKanStogu[bloodList[index]]}",
                         style: GoogleFonts.roboto(
                           textStyle: TextStyle(
-                              fontSize: 28,
+                              fontSize: mediaSize.width * .072,
                               color: projectRed,
                               fontWeight: FontWeight.bold),
                         ),

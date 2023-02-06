@@ -4,6 +4,7 @@ import 'package:artun_flutter_project/view/talepci/kan_talep_page.dart';
 import 'package:artun_flutter_project/view/talepci/talepci_talepler_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
@@ -85,25 +86,13 @@ class _THomePageState extends State<THomePage> {
           },
           destinations: [
             NavigationDestination(
-              selectedIcon: Icon(
-                Icons.home,
-                color: projectRed,
-              ),
-              icon: Icon(
-                Icons.home_outlined,
-                color: projectRed,
-              ),
+              selectedIcon: SvgPicture.asset("assets/ic_home_heart.svg"),
+              icon: SvgPicture.asset("assets/ic_home_heart_outline.svg"),
               label: "Talepler",
             ),
             NavigationDestination(
-              selectedIcon: Icon(
-                Icons.playlist_add_circle_sharp,
-                color: projectRed,
-              ),
-              icon: Icon(
-                Icons.playlist_add_circle_outlined,
-                color: projectRed,
-              ),
+              selectedIcon: SvgPicture.asset("assets/ic_heart_add.svg"),
+              icon: SvgPicture.asset("assets/ic_heart_add_outline.svg"),
               label: "Kan Talep ",
             ),
           ],

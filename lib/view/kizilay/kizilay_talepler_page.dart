@@ -36,9 +36,13 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
       }
     });
     if (userSpesificTalepList.isEmpty) {
-      isTalepExist = false;
+      setState(() {
+        isTalepExist = false;
+      });
     } else {
-      isTalepExist = true;
+      setState(() {
+        isTalepExist = true;
+      });
     }
   }
 
@@ -74,10 +78,10 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
                     ),
                     itemCount: talepListLenght,
                     padding: const EdgeInsets.only(
-                        left: 12.0, right: 12.0, bottom: 8.0, top: 4.0),
+                        left: 10.0, right: 10.0, bottom: 8.0, top: 4.0),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2),
+                            crossAxisCount: 2, childAspectRatio: 28 / 28),
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
@@ -99,8 +103,12 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
                           );
                         },
                         child: TalepTile(
-                          talepEden: userSpesificTalepList[index]!["kanGrubu"],
-                          talepDetayi: "Talep Detayları...",
+                          talepEden: userSpesificTalepList[index]!["talepEden"],
+                          kanGrubu: userSpesificTalepList[index]!["kanGrubu"],
+                          unite: userSpesificTalepList[index]!["unite"],
+                          durum: userSpesificTalepList[index]!["durum"],
+                          talepSaati:
+                              userSpesificTalepList[index]!["olusturmaSaati"],
                         ),
                       );
                     },

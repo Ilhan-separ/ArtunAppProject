@@ -99,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                       _talepciLoginOnPressed(context, kullanciAdi, password);
                     }
                   },
-                  child: Text("Giriş")),
+                  child: Text("Giriş Yap")),
               // Row(
               //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               //   children: [

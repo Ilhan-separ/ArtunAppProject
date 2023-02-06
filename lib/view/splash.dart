@@ -31,15 +31,19 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Image(
+        children: [
+          FutureBuilder(
+            future: Provider.of<AppStateManager>(context).isAlreadyLogged(),
+            builder: (context, snapshot) => const Text(""),
+          ),
+          const Image(
             image: AssetImage('assets/uzay_havacilik.png'),
             height: 200,
           ),
-          SizedBox(
+          const SizedBox(
             height: 24.0,
           ),
-          CircularProgressIndicator(),
+          const CircularProgressIndicator(),
         ],
       )),
     );

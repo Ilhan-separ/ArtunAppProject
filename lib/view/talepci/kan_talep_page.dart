@@ -1,6 +1,9 @@
 import 'package:artun_flutter_project/constants.dart';
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -21,8 +24,8 @@ class KanTalepScreenState extends State<KanTalepScreen> {
   double _currentUserLat = 1;
   double _currentUserLng = 1;
 
-  final String _kanGrubu = "Kan Grubunu Seçiniz:";
-  final String _kanUnitesi = "Kaç Ünite Olacağını Şeçiniz:";
+  final String _kanGrubuText = "Kan Grubunu Seçiniz:";
+  final String _kanUnitesiText = "Ünite Sayısını Şeçiniz:";
   final List<String> _kanGrubuListesi = [
     "A+",
     "A-",
@@ -56,85 +59,176 @@ class KanTalepScreenState extends State<KanTalepScreen> {
     );
   }
 
+  List<DropdownMenuItem<String>> _addDividersAfterItems(
+      List<String> items, context) {
+    List<DropdownMenuItem<String>> _menuItems = [];
+    for (var item in items) {
+      _menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+            value: item,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                item,
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * .066,
+                ),
+              ),
+            ),
+          ),
+
+          //If it's last item, we will not add Divider after it.
+          if (item != items.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(
+                height: 0,
+                thickness: 1,
+                color: Colors.white,
+              ),
+            ),
+        ],
+      );
+    }
+    return _menuItems;
+  }
+
+  List<double> _getCustomItemsHeights(items) {
+    List<double> _itemsHeights = [];
+    for (var i = 0; i < (items.length * 2) - 1; i++) {
+      _itemsHeights.add(30);
+
+      //Dividers indexes will be the odd indexes
+    }
+    return _itemsHeights;
+  }
+
   @override
   Widget build(BuildContext context) {
+    Size mediaSize = MediaQuery.of(context).size;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                SizedBox(
+                  width: mediaSize.width * .014,
+                ),
                 Text(
-                  _kanGrubu,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                customSizedBox(
-                  DropdownButtonFormField<String>(
-                    style: TextStyle(fontSize: 20, color: projectCyan),
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              width: .1,
-                            ))),
-                    value: _selectedKanTipi,
-                    items: _kanGrubuListesi
-                        .map(
-                          (item) => DropdownMenuItem<String>(
-                            value: item,
-                            child: Text(item),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) => setState(() {
-                      _selectedKanTipi = value;
-                    }),
-                  ),
-                ),
-              ],
-            ),
-            Divider(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _kanUnitesi,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                customSizedBox(
-                  DropdownButtonFormField<String>(
-                    style: TextStyle(fontSize: 20, color: projectCyan),
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              width: .1,
-                            ))),
-                    value: _selectedUniteSayisi,
-                    items: _uniteSayiListesi
-                        .map(
-                          (item) => DropdownMenuItem<String>(
-                            value: item,
-                            child: Text(item),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) => setState(() {
-                      _selectedUniteSayisi = value;
-                    }),
+                  _kanGrubuText,
+                  style: GoogleFonts.robotoMono(
+                    fontSize: mediaSize.width * .036,
                   ),
                 ),
               ],
             ),
             SizedBox(
-              height: 35,
+              height: mediaSize.height * .018,
             ),
-            ElevatedButton(
-              onPressed: () async => _showKanTalepDialog(context),
-              child: Text("Talepte Bulun"),
+            DropdownButtonHideUnderline(
+              child: DropdownButton2<String>(
+                style: TextStyle(
+                  fontSize: mediaSize.width * .070,
+                  color: Colors.white,
+                ),
+                buttonDecoration: BoxDecoration(
+                  color: projectCyan,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                buttonWidth: mediaSize.width * .55,
+                buttonHeight: mediaSize.height * .065,
+                buttonPadding: EdgeInsets.only(left: 16, right: 10),
+                buttonElevation: 1,
+                dropdownElevation: 1,
+                dropdownOverButton: false,
+                dropdownDecoration: BoxDecoration(
+                  color: projectCyan,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                dropdownPadding:
+                    EdgeInsets.only(left: 6, right: 6, top: 8, bottom: 8),
+                itemPadding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
+                //customItemsHeights: [],
+                value: _selectedKanTipi,
+                items: _addDividersAfterItems(_kanGrubuListesi, context),
+                customItemsHeights: _getCustomItemsHeights(_kanGrubuListesi),
+                onChanged: (value) => setState(() {
+                  _selectedKanTipi = value;
+                }),
+              ),
+            ),
+            Divider(height: mediaSize.height * .050),
+            Row(
+              children: [
+                SizedBox(
+                  width: mediaSize.width * .014,
+                ),
+                Text(
+                  _kanUnitesiText,
+                  style: GoogleFonts.robotoMono(
+                    fontSize: mediaSize.width * .036,
+                  ),
+                ),
+              ],
+            ),
+            //customSizedBox(),
+            SizedBox(
+              height: mediaSize.height * .018,
+            ),
+            DropdownButtonHideUnderline(
+              child: DropdownButton2<String>(
+                style: TextStyle(
+                  fontSize: mediaSize.width * .070,
+                  color: Colors.white,
+                ),
+                buttonDecoration: BoxDecoration(
+                  color: projectCyan,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                buttonWidth: mediaSize.width * .55,
+                buttonHeight: mediaSize.height * .065,
+                buttonPadding: EdgeInsets.only(left: 16, right: 10),
+                buttonElevation: 1,
+                dropdownElevation: 1,
+                dropdownOverButton: false,
+                dropdownDecoration: BoxDecoration(
+                  color: projectCyan,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                dropdownPadding:
+                    EdgeInsets.only(left: 6, right: 6, top: 8, bottom: 8),
+                itemPadding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
+                //customItemsHeights: [],
+                value: _selectedUniteSayisi,
+                items: _addDividersAfterItems(_uniteSayiListesi, context),
+                customItemsHeights: _getCustomItemsHeights(_uniteSayiListesi),
+                onChanged: (value) => setState(() {
+                  _selectedUniteSayisi = value;
+                }),
+              ),
+            ),
+
+            SizedBox(
+              height: mediaSize.height * .080,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: () async => _showKanTalepDialog(context),
+                  child: Text("Talepte Bulun"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: projectRed,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -193,7 +287,8 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                   },
                   onError: (e) => print("Error getting document: $e"),
                 );
-                //TODO: Aga bu çok sallantılı nasıl yapılacağına bir daha bak.
+                //TODO: Saat formatı değişebilir.
+                String dt = DateFormat("HH:mm").format(DateTime.now());
                 dbTalepMap.addAll({
                   "kanGrubu": _selectedKanTipi,
                   "unite": _selectedUniteSayisi,
@@ -205,10 +300,15 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                   "kizilayID": dbKizilayMap![1]["id"],
                   "kizilayLat": dbKizilayMap![1]["lat"],
                   "kizilayLng": dbKizilayMap![1]["lng"],
+                  "durum": "iletildi",
+                  "id": "",
+                  "olusturmaSaati": dt,
+                  "kalkisSaati": "",
                 });
-                taleplerRef
-                    .add(dbTalepMap)
-                    .then((value) => print("id is : ${value.id}"));
+                taleplerRef.add(dbTalepMap).then((value) {
+                  taleplerRef.doc(value.id).update({"id": value.id});
+                  print(value.id);
+                });
                 Navigator.of(context).pop();
               },
               child: Text(

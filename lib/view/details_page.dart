@@ -1,3 +1,4 @@
+import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -6,11 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'dart:math' as math;
 import '../constants.dart';
-import '../utilities/app_state_manager.dart';
 
 class DetailsPage extends StatefulWidget {
   final Map<String, dynamic>? userSpesicifTalepList;
@@ -107,12 +108,32 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   Set<Marker> _markers = {};
+  String _currentUserId = "";
+  String _droneDurum = "Hazırlanıyor";
 
   @override
   void initState() {
     _markers = setMarkers();
     getPolyPoints();
+    switch (widget.userSpesicifTalepList!["durum"]) {
+      case "iletildi":
+        _droneDurum = "Hazırlanıyor";
+        break;
+      case "yolda":
+        _droneDurum = "Yolda";
+        break;
+      case "vardı":
+        _droneDurum = "Vardı";
+        break;
+      default:
+    }
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _currentUserId = Provider.of<AppStateManager>(context).getCurrentUserID;
   }
 
   bool _isBackClicked = false;
@@ -218,78 +239,129 @@ class _DetailsPageState extends State<DetailsPage> {
                                 const Divider(
                                   height: 24,
                                 ),
-                                _droneDurumBuilder(context),
-                                SizedBox(
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _droneDurumBuilder(context),
+                                    Text("Estimated time"),
+                                  ],
+                                ),
+                                const SizedBox(
                                   height: 16,
                                 ),
-                                Container(
-                                  padding: EdgeInsets.only(left: 20, right: 12),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          _kalkisVeVarisBuilder(
-                                              "Kalkış", "kalkis"),
-                                          Text(
-                                            widget.userSpesicifTalepList![
-                                                dbDocKizilay],
-                                            style: GoogleFonts.roboto(
-                                              textStyle: TextStyle(
-                                                fontSize: 20,
-                                                color: projectRed,
-                                                fontWeight: FontWeight.w500,
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        borderRadius:
+                                            BorderRadius.circular(24)),
+                                    padding: const EdgeInsets.only(
+                                        left: 20,
+                                        right: 12,
+                                        top: 10,
+                                        bottom: 10),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            _kalkisVeVarisBuilder(
+                                                "Kalkış", "kalkis"),
+                                            Text(
+                                              widget.userSpesicifTalepList![
+                                                  dbDocKizilay],
+                                              style: GoogleFonts.roboto(
+                                                textStyle: TextStyle(
+                                                  fontSize: 20,
+                                                  color: projectRed,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
-                                      Row(
-                                        children: [
-                                          const SizedBox(
-                                            width: 8,
-                                          ),
-                                          Image.asset(
-                                              "assets/ic_boslukluCizgi.png"),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          _kalkisVeVarisBuilder(
-                                              "Varış", "varis"),
-                                          Text(
-                                            widget.userSpesicifTalepList![
-                                                dbDocTalepEden],
-                                            style: GoogleFonts.roboto(
-                                              textStyle: TextStyle(
-                                                fontSize: 20,
-                                                color: projectRed,
-                                                fontWeight: FontWeight.w500,
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 4,
+                                        ),
+                                        Row(
+                                          children: [
+                                            const SizedBox(
+                                              width: 8,
+                                            ),
+                                            Image.asset(
+                                                "assets/ic_boslukluCizgi.png"),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 4,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            _kalkisVeVarisBuilder(
+                                                "Varış", "varis"),
+                                            Text(
+                                              widget.userSpesicifTalepList![
+                                                  dbDocTalepEden],
+                                              style: GoogleFonts.roboto(
+                                                textStyle: TextStyle(
+                                                  fontSize: 20,
+                                                  color: projectRed,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      )
-                                    ],
+                                          ],
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                SizedBox(
-                                  height: 16,
+                                const Divider(
+                                  height: 32,
                                 ),
-                                Text(
-                                  'Distance : ${getDistanceBetween(_kizilay.latitude, _hastane.latitude, _kizilay.longitude, _hastane.longitude)} km',
-                                  style: TextStyle(color: Colors.black),
+                                ListTile(
+                                  title: Text(
+                                    'Uzaklık',
+                                    style: GoogleFonts.roboto(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  dense: true,
+                                  subtitle: Text(
+                                    "${getDistanceBetween(_kizilay.latitude, _hastane.latitude, _kizilay.longitude, _hastane.longitude)} km",
+                                    style: GoogleFonts.roboto(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey[600]),
+                                  ),
+                                  trailing: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Talebin Oluşturulma Saati",
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      Text(
+                                        widget.userSpesicifTalepList![
+                                            dbDocOlusturulmaSaati],
+                                        style: GoogleFonts.roboto(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -298,17 +370,22 @@ class _DetailsPageState extends State<DetailsPage> {
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.only(bottom: 8),
-                      child: ElevatedButton(
-                        onPressed:
-                            () {}, //TODO: Drone Durumuna göre işlevi ve yazısı değişicek.
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: projectCyan,
-                        ),
-                        child: const Center(
-                          child: Text("Button"),
-                        ),
-                      ),
+                      margin: EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                      child: _currentUserId ==
+                              widget.userSpesicifTalepList!["kizilayID"]
+                          ? _kizilayElevatedButtonControl()
+                          : ElevatedButton(
+                              onPressed: () async =>
+                                  widget.userSpesicifTalepList!["durum"] !=
+                                          "yolda"
+                                      ? null
+                                      : _showHastaneOnayDialog(context),
+                              child: Center(
+                                child: _droneDurum == "Yolda"
+                                    ? Text("Paketi Aldım")
+                                    : Icon(Icons.clear),
+                              ),
+                            ),
                     )
                   ],
                 ),
@@ -316,6 +393,73 @@ class _DetailsPageState extends State<DetailsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  ElevatedButton _kizilayElevatedButtonControl() {
+    return ElevatedButton(
+      onPressed: () async {
+        String dt = DateFormat("HH:mm").format(DateTime.now());
+        widget.userSpesicifTalepList![dbDocDroneDurum] == "iletildi"
+            ? {
+                await FirebaseFirestore.instance
+                    .collection("Talepler")
+                    .doc(widget.userSpesicifTalepList!["id"])
+                    .update({dbDocDroneDurum: "yolda", dbDocKalkisSaati: dt}),
+                setState(() {
+                  _droneDurum = "Yolda";
+                }),
+              }
+            : null;
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: projectCyan,
+      ),
+      child: Center(
+        child: _droneDurum == "Hazırlanıyor"
+            ? Text("Yola Çık")
+            : Icon(Icons.clear),
+      ),
+    );
+  }
+
+  Future<void> _showHastaneOnayDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text("Paketinizi aldığınızı onaylıyor musunuz?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              "Geri",
+              style: TextStyle(
+                color: Colors.blueGrey[400],
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              //TODO: Dronun varmış olma durmunu drondan gelen veriler ile algılayacağım.
+
+              await FirebaseFirestore.instance
+                  .collection("Talepler")
+                  .doc(widget.userSpesicifTalepList!["id"])
+                  .update({dbDocDroneDurum: "vardı"});
+
+              setState(() {
+                _droneDurum = "Vardı";
+              });
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              "Onaylıyorum",
+              style: TextStyle(color: projectCyan, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -365,7 +509,7 @@ class _DetailsPageState extends State<DetailsPage> {
               ),
             ),
             Text(
-              "Hazırlanıyor",
+              _droneDurum,
               style: GoogleFonts.roboto(
                 textStyle: const TextStyle(
                   fontSize: 16,
@@ -373,7 +517,7 @@ class _DetailsPageState extends State<DetailsPage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ), // TODO: Buraya DataBase'den Gelen veri Yazıcak
+            ),
           ],
         ),
       ),

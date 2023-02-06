@@ -3,6 +3,7 @@ import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:artun_flutter_project/view/details_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/talep_tile.dart';
@@ -68,7 +69,9 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
             return Center(
               child: Text(
                 "Talep Bulunmuyor",
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: projectRed,
+                    fontFamily: GoogleFonts.roboto().fontFamily),
               ),
             );
           } else {
@@ -79,7 +82,7 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
                         left: 12.0, right: 12.0, bottom: 8.0, top: 4.0),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2),
+                            crossAxisCount: 2, childAspectRatio: 28 / 28),
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
@@ -101,8 +104,12 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
                           );
                         },
                         child: TalepTile(
-                          talepEden: userSpesificTalepList[index]!["kanGrubu"],
-                          talepDetayi: "Talep Detayları...",
+                          talepEden: userSpesificTalepList[index]!["kizilay"],
+                          kanGrubu: userSpesificTalepList[index]!["kanGrubu"],
+                          unite: userSpesificTalepList[index]!["unite"],
+                          durum: userSpesificTalepList[index]!["durum"],
+                          talepSaati:
+                              userSpesificTalepList[index]!["olusturmaSaati"],
                         ),
                       );
                     },

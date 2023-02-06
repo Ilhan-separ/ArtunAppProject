@@ -7,6 +7,7 @@ import 'package:artun_flutter_project/view/kizilay/kizilay_talepler_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class KhomePage extends StatefulWidget {
@@ -90,24 +91,20 @@ class _KhomePageState extends State<KhomePage> {
           },
           destinations: [
             NavigationDestination(
-              selectedIcon: Icon(
-                Icons.home,
-                color: projectRed,
-              ),
-              icon: Icon(
-                Icons.home_outlined,
-                color: projectRed,
-              ),
+              selectedIcon: SvgPicture.asset("assets/ic_home_heart.svg"),
+              icon: SvgPicture.asset("assets/ic_home_heart_outline.svg"),
               label: "Talepler",
             ),
             NavigationDestination(
-              selectedIcon: Icon(
-                Icons.church_sharp,
-                color: projectRed,
+              selectedIcon: SvgPicture.asset(
+                "assets/ic_blood_bag.svg",
+                height: 24,
+                colorFilter: ColorFilter.mode(projectRed, BlendMode.srcIn),
               ),
-              icon: Icon(
-                Icons.church_outlined,
-                color: projectRed,
+              icon: SvgPicture.asset(
+                "assets/ic_blood_bag_outline.svg",
+                height: 24,
+                colorFilter: ColorFilter.mode(projectRed, BlendMode.srcIn),
               ),
               label: "Kan Stoğu ",
             ),

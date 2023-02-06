@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 const String google_api_key = "AIzaSyB-gSa3D1mt1z-jKfWXpgX4vxKaCAYWQVk";
 
@@ -12,6 +13,8 @@ Map<int, Color> color1 = const {
 Color projectRed = Color(0xFFC33232);
 Color projectCyan = Color(0XFF80D5DA);
 
+// ----------- For Details Page ----------------
+
 String dbDocTalepEden = "talepEden";
 String dbDocKanGrubu = "kanGrubu";
 String dbDocKizilay = "kizilay";
@@ -20,3 +23,7 @@ String dbDocKizilayLat = "kizilayLat";
 String dbDocKizilayLng = "kizilayLng";
 String dbDocTalepEdenLat = "talepEdenLat";
 String dbDocTalepEdenLng = "talepEdenLng";
+String dbDocId = "id";
+String dbDocOlusturulmaSaati = "olusturmaSaati";
+String dbDocKalkisSaati = "kalkisSaati";
+String dbDocDroneDurum = "durum";

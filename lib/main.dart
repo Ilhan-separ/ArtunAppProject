@@ -1,3 +1,4 @@
+import 'package:artun_flutter_project/constants.dart';
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,12 @@ class _ArtunAppState extends State<ArtunApp> {
         title: 'Artun App',
         theme: ThemeData(
           primarySwatch: Colors.red,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: projectCyan,
+              disabledBackgroundColor: Colors.grey[100],
+            ),
+          ),
         ),
         home: Router(
           routerDelegate: _appRouter,

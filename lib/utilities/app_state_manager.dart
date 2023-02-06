@@ -20,7 +20,7 @@ class AppStateManager extends ChangeNotifier {
   bool _tLoggedIn = false;
   int _kizilaySelectedTab = KizilayTab.talep;
   int _talepciSelectedTab = TalepciTab.talepDetayi;
-  String _currentUserID = "";
+  String _currentUserID = "a";
   String _currentUserName = "";
   bool _throwLoginAlert = false;
   double _currentUserLat = 1;
@@ -47,9 +47,12 @@ class AppStateManager extends ChangeNotifier {
     );
   }
 
-  void loginForK(String username, String password) {
+  Future<void> loginForK(String username, String password) async {
     Map<String, dynamic> data;
-    FirebaseFirestore.instance.collection("KizilayUsers").get().then((query) {
+    await FirebaseFirestore.instance
+        .collection("KizilayUsers")
+        .get()
+        .then((query) {
       query.docs.forEach((element) {
         data = element.data() as Map<String, dynamic>;
         if (username == data["kullaniciAdi"] && password == data["password"]) {
@@ -63,16 +66,19 @@ class AppStateManager extends ChangeNotifier {
           notifyListeners();
         }
       });
-      if (_currentUserID.contains("")) {
-        _throwLoginAlert = true;
-        notifyListeners();
-      }
     });
+    if (_currentUserID.contains("a")) {
+      _throwLoginAlert = true;
+      notifyListeners();
+    }
   }
 
-  void loginForT(String username, String password) {
+  Future<void> loginForT(String username, String password) async {
     Map<String, dynamic> data;
-    FirebaseFirestore.instance.collection("TalepciUsers").get().then((query) {
+    await FirebaseFirestore.instance
+        .collection("TalepciUsers")
+        .get()
+        .then((query) {
       query.docs.forEach((element) {
         data = element.data() as Map<String, dynamic>;
         if (username == data["kullaniciAdi"] && password == data["password"]) {
@@ -86,41 +92,77 @@ class AppStateManager extends ChangeNotifier {
           notifyListeners();
         }
       });
-      if (_currentUserID.contains("")) {
-        _throwLoginAlert = true;
-        notifyListeners();
-      }
+    });
+    if (_currentUserID.contains("a")) {
+      _throwLoginAlert = true;
+      notifyListeners();
+    }
+  }
+
+  void _getKizilayData(String id) {
+    Map<String, dynamic> data;
+    FirebaseFirestore.instance.collection("KizilayUsers").get().then((query) {
+      query.docs.forEach((element) {
+        data = element.data() as Map<String, dynamic>;
+        if (id == data["id"]) {
+          _currentUserID = data["id"];
+          _currentUserName = data["name"];
+          // _currentUserLat = data["lat"];
+          // _currentUserLng = data["lng"];
+          _throwLoginAlert = false;
+          _kLoggedIn = true;
+          notifyListeners();
+        }
+      });
     });
   }
 
-  // Future<void> isAlreadyLogged() async {
-  //   bool _isLoggedIn = false;
-  //   String user = "";
-  //   await SessionManager().containsKey("id").then((value) {
-  //     if (value != null) {
-  //       _isLoggedIn = value;
-  //     } else {
-  //       return false;
-  //     }
-  //   });
-  //   await SessionManager().get("id").then((value) {
-  //     if (value != null) {
-  //       user = value;
-  //     }
-  //   });
+  void _getTalepciData(String id) {
+    Map<String, dynamic> data;
+    FirebaseFirestore.instance.collection("TalepciUsers").get().then((query) {
+      query.docs.forEach((element) {
+        data = element.data() as Map<String, dynamic>;
+        if (id == data["id"]) {
+          _currentUserID = data["id"];
+          _currentUserName = data["name"];
+          _currentUserLat = data["lat"];
+          _currentUserLng = data["lng"];
+          _throwLoginAlert = false;
+          _tLoggedIn = true;
+          notifyListeners();
+        }
+      });
+    });
+  }
 
-  //   if (_isLoggedIn) {
-  //     if (user.contains("User")) {
-  //       _kLoggedIn = true;
-  //     } else {
-  //       _tLoggedIn = true;
-  //     }
-  //   } else {
-  //     _kLoggedIn = false;
-  //     _tLoggedIn = false;
-  //   }
-  //   notifyListeners();
-  // }
+  Future<void> isAlreadyLogged() async {
+    bool isLoggedIn = false;
+    String user = "";
+    await SessionManager().containsKey("id").then((value) {
+      if (value != null) {
+        isLoggedIn = value;
+      } else {
+        return false;
+      }
+    });
+    await SessionManager().get("id").then((value) {
+      if (value != null) {
+        user = value;
+      }
+    });
+    print("login :  $isLoggedIn");
+    if (isLoggedIn) {
+      if (user.contains("User")) {
+        _getKizilayData(user);
+      } else {
+        _getTalepciData(user);
+      }
+    } else {
+      _kLoggedIn = false;
+      _tLoggedIn = false;
+    }
+    notifyListeners();
+  }
 
   void navigateKizilayTab(index) {
     _kizilaySelectedTab = index;
