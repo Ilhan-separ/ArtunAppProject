@@ -219,7 +219,7 @@ class _DetailsPageState extends State<DetailsPage> {
                                   height: 10,
                                 ),
                                 Container(
-                                  // Kan Grubu Ve Ünite SAyısı Bilgisi
+                                  // Kan Grubu Ve Ünite Sayısı Bilgisi
 
                                   padding: EdgeInsets.only(left: 24, right: 12),
                                   child: Column(children: [

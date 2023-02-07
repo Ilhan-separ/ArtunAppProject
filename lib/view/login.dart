@@ -89,60 +89,18 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: projectCyan,
-                  ),
-                  onPressed: () {
-                    if (kullanciAdi.contains("k")) {
-                      _kizilayLoginOnPressed(context, kullanciAdi, password);
-                    } else {
-                      _talepciLoginOnPressed(context, kullanciAdi, password);
-                    }
-                  },
-                  child: Text("Giriş Yap")),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //   children: [
-              //     ElevatedButton(
-              //       child: Text('Merkez Kızılay'),
-              //       onPressed: () async {
-              //         _kizilayLoginOnPressed(context, 'Merkez Kızılay');
-              //       },
-              //     ),
-              //     ElevatedButton(
-              //       child: Text('İlçe Kızılay'),
-              //       onPressed: () async {
-              //         _kizilayLoginOnPressed(context, 'İlçe Kızılay');
-              //       },
-              //     ),
-              //     ElevatedButton(
-              //       child: Text('Gezen Kızılay'),
-              //       onPressed: () async {
-              //         _kizilayLoginOnPressed(context, 'Gezen Kızılay');
-              //       },
-              //     ),
-              //   ],
-              // ),
-              // SizedBox(
-              //   height: 12,
-              // ),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //   children: [
-              //     ElevatedButton(
-              //       child: Text('Merkez Hastane'),
-              //       onPressed: () async {
-              //         _talepciLoginOnPressed(context, "Merkez Hastane");
-              //       },
-              //     ),
-              //     ElevatedButton(
-              //       child: Text('İlçe Hastane'),
-              //       onPressed: () async {
-              //         _talepciLoginOnPressed(context, 'İlçe Hastane');
-              //       },
-              //     ),
-              //   ],
-              // ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: projectCyan,
+                ),
+                onPressed: () {
+                  if (kullanciAdi.contains("k")) {
+                    _kizilayLoginOnPressed(context, kullanciAdi, password);
+                  } else {
+                    _talepciLoginOnPressed(context, kullanciAdi, password);
+                  }
+                },
+                child: Text("Giriş Yap"),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -180,7 +138,6 @@ class _LoginPageState extends State<LoginPage> {
 
   void _talepciLoginOnPressed(
       BuildContext context, String kullanciAdi, String password) {
-    print("login $kullanciAdi");
     Provider.of<AppStateManager>(context, listen: false)
         .loginForT(kullanciAdi, password);
   }

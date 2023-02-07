@@ -1,5 +1,6 @@
 import 'package:artun_flutter_project/constants.dart';
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
+import 'package:artun_flutter_project/view/talepci/talep_ayrinti_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -47,17 +48,10 @@ class KanTalepScreenState extends State<KanTalepScreen> {
     "8",
   ];
 
-  String? _selectedKanTipi = "A+";
-  String? _selectedUniteSayisi = '1';
+  String _selectedKanTipi = "A+";
+  String _selectedUniteSayisi = '1';
   String _currentUser = "";
   String _currentUserName = "";
-
-  Widget customSizedBox(Widget child) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * .23,
-      child: child,
-    );
-  }
 
   List<DropdownMenuItem<String>> _addDividersAfterItems(
       List<String> items, context) {
@@ -72,13 +66,11 @@ class KanTalepScreenState extends State<KanTalepScreen> {
               child: Text(
                 item,
                 style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * .066,
+                  fontSize: MediaQuery.of(context).size.height * .038,
                 ),
               ),
             ),
           ),
-
-          //If it's last item, we will not add Divider after it.
           if (item != items.last)
             const DropdownMenuItem<String>(
               enabled: false,
@@ -98,8 +90,6 @@ class KanTalepScreenState extends State<KanTalepScreen> {
     List<double> _itemsHeights = [];
     for (var i = 0; i < (items.length * 2) - 1; i++) {
       _itemsHeights.add(30);
-
-      //Dividers indexes will be the odd indexes
     }
     return _itemsHeights;
   }
@@ -146,6 +136,7 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                 buttonElevation: 1,
                 dropdownElevation: 1,
                 dropdownOverButton: false,
+                dropdownMaxHeight: mediaSize.height * .3,
                 dropdownDecoration: BoxDecoration(
                   color: projectCyan,
                   borderRadius: BorderRadius.circular(12),
@@ -154,12 +145,11 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                     EdgeInsets.only(left: 6, right: 6, top: 8, bottom: 8),
                 itemPadding:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
-                //customItemsHeights: [],
                 value: _selectedKanTipi,
                 items: _addDividersAfterItems(_kanGrubuListesi, context),
                 customItemsHeights: _getCustomItemsHeights(_kanGrubuListesi),
                 onChanged: (value) => setState(() {
-                  _selectedKanTipi = value;
+                  _selectedKanTipi = value!;
                 }),
               ),
             ),
@@ -177,7 +167,6 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                 ),
               ],
             ),
-            //customSizedBox(),
             SizedBox(
               height: mediaSize.height * .018,
             ),
@@ -197,6 +186,7 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                 buttonElevation: 1,
                 dropdownElevation: 1,
                 dropdownOverButton: false,
+                dropdownMaxHeight: mediaSize.height * .3,
                 dropdownDecoration: BoxDecoration(
                   color: projectCyan,
                   borderRadius: BorderRadius.circular(12),
@@ -205,16 +195,14 @@ class KanTalepScreenState extends State<KanTalepScreen> {
                     EdgeInsets.only(left: 6, right: 6, top: 8, bottom: 8),
                 itemPadding:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
-                //customItemsHeights: [],
                 value: _selectedUniteSayisi,
                 items: _addDividersAfterItems(_uniteSayiListesi, context),
                 customItemsHeights: _getCustomItemsHeights(_uniteSayiListesi),
                 onChanged: (value) => setState(() {
-                  _selectedUniteSayisi = value;
+                  _selectedUniteSayisi = value!;
                 }),
               ),
             ),
-
             SizedBox(
               height: mediaSize.height * .080,
             ),
@@ -222,7 +210,15 @@ class KanTalepScreenState extends State<KanTalepScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ElevatedButton(
-                  onPressed: () async => _showKanTalepDialog(context),
+                  onPressed: () async {
+                    await kizilayRef.get().then(
+                      (documents) {
+                        dbKizilayMap = documents.docs.asMap();
+                      },
+                      onError: (e) => print("Error getting document: $e"),
+                    );
+                    _showKanTalepDialog(context);
+                  },
                   child: Text("Talepte Bulun"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: projectRed,
@@ -238,87 +234,94 @@ class KanTalepScreenState extends State<KanTalepScreen> {
 
   Future<void> _showKanTalepDialog(BuildContext context) {
     //Dialog'u burdan gösterip tüm işlemlerini burdan yapıyorum.
-    return showDialog(
+    return showGeneralDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text("Seçilenler:"),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: [
-                Text("Seçilen Kan Grubu : $_selectedKanTipi"),
-                Text("Seçilen Ünite : $_selectedUniteSayisi ")
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                "Geri",
-                style: TextStyle(
-                  color: Colors.blueGrey[400],
-                ),
-              ),
-            ),
-            TextButton(
-              //!!!!Firebase talep listesi oluşturan  textBox!!!!
-
-              onPressed: () async {
-                _currentUser =
-                    Provider.of<AppStateManager>(context, listen: false)
-                        .getCurrentUserID;
-                _currentUserName =
-                    Provider.of<AppStateManager>(context, listen: false)
-                        .getCurrentUserName;
-                _currentUserLat =
-                    Provider.of<AppStateManager>(context, listen: false)
-                        .getCurrentUserLat;
-                _currentUserLng =
-                    Provider.of<AppStateManager>(context, listen: false)
-                        .getCurrentUserLng;
-
-                await kizilayRef.get().then(
-                  (documents) {
-                    dbKizilayMap = documents.docs.asMap();
-                  },
-                  onError: (e) => print("Error getting document: $e"),
-                );
-                //TODO: Saat formatı değişebilir.
-                String dt = DateFormat("HH:mm").format(DateTime.now());
-                dbTalepMap.addAll({
-                  "kanGrubu": _selectedKanTipi,
-                  "unite": _selectedUniteSayisi,
-                  "talepEdenID": _currentUser,
-                  "talepEden": _currentUserName,
-                  "talepEdenLat": _currentUserLat,
-                  "talepEdenLng": _currentUserLng,
-                  "kizilay": dbKizilayMap![1]["name"],
-                  "kizilayID": dbKizilayMap![1]["id"],
-                  "kizilayLat": dbKizilayMap![1]["lat"],
-                  "kizilayLng": dbKizilayMap![1]["lng"],
-                  "durum": "iletildi",
-                  "id": "",
-                  "olusturmaSaati": dt,
-                  "kalkisSaati": "",
-                });
-                taleplerRef.add(dbTalepMap).then((value) {
-                  taleplerRef.doc(value.id).update({"id": value.id});
-                  print(value.id);
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                "Talep Et",
-                style: TextStyle(
-                    color: Colors.blueGrey[700], fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return TalepAyrintiDialog(
+          uniteSayisi: int.parse(_selectedUniteSayisi),
+          kanGrubuText: _selectedKanTipi,
+          uniteSayisiText: _selectedUniteSayisi,
+          dbKizilayMap: dbKizilayMap,
         );
+
+        // return AlertDialog(
+        //   shape:
+        //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        //   title: Text("Seçilenler:"),
+        //   content: SingleChildScrollView(
+        //     child: ListBody(
+        //       children: [
+        //         Text("Seçilen Kan Grubu : $_selectedKanTipi"),
+        //         Text("Seçilen Ünite : $_selectedUniteSayisi ")
+        //       ],
+        //     ),
+        //   ),
+        //   actions: <Widget>[
+        //     TextButton(
+        //       onPressed: () => Navigator.of(context).pop(),
+        //       child: Text(
+        //         "Geri",
+        //         style: TextStyle(
+        //           color: Colors.blueGrey[400],
+        //         ),
+        //       ),
+        //     ),
+        //     TextButton(
+        //       //!!!!Firebase talep listesi oluşturan  textBox!!!!
+
+        //       onPressed: () async {
+        //         _currentUser =
+        //             Provider.of<AppStateManager>(context, listen: false)
+        //                 .getCurrentUserID;
+        //         _currentUserName =
+        //             Provider.of<AppStateManager>(context, listen: false)
+        //                 .getCurrentUserName;
+        //         _currentUserLat =
+        //             Provider.of<AppStateManager>(context, listen: false)
+        //                 .getCurrentUserLat;
+        //         _currentUserLng =
+        //             Provider.of<AppStateManager>(context, listen: false)
+        //                 .getCurrentUserLng;
+
+        //         await kizilayRef.get().then(
+        //           (documents) {
+        //             dbKizilayMap = documents.docs.asMap();
+        //           },
+        //           onError: (e) => print("Error getting document: $e"),
+        //         );
+        //         //TODO: Saat formatı değişebilir.
+        //         String dt = DateFormat("HH:mm").format(DateTime.now());
+        //         dbTalepMap.addAll({
+        //           "kanGrubu": _selectedKanTipi,
+        //           "unite": _selectedUniteSayisi,
+        //           "talepEdenID": _currentUser,
+        //           "talepEden": _currentUserName,
+        //           "talepEdenLat": _currentUserLat,
+        //           "talepEdenLng": _currentUserLng,
+        //           "kizilay": dbKizilayMap![1]["name"],
+        //           "kizilayID": dbKizilayMap![1]["id"],
+        //           "kizilayLat": dbKizilayMap![1]["lat"],
+        //           "kizilayLng": dbKizilayMap![1]["lng"],
+        //           "durum": "iletildi",
+        //           "id": "",
+        //           "olusturmaSaati": dt,
+        //           "kalkisSaati": "",
+        //         });
+        //         taleplerRef.add(dbTalepMap).then((value) {
+        //           taleplerRef.doc(value.id).update({"id": value.id});
+        //           print(value.id);
+        //         });
+        //         Navigator.of(context).pop();
+        //       },
+        //       child: Text(
+        //         "Talep Et",
+        //         style: TextStyle(
+        //             color: Colors.blueGrey[700], fontWeight: FontWeight.bold),
+        //       ),
+        //     ),
+        //   ],
+        // );
       },
     );
   }

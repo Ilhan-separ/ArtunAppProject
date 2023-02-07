@@ -150,7 +150,6 @@ class AppStateManager extends ChangeNotifier {
         user = value;
       }
     });
-    print("login :  $isLoggedIn");
     if (isLoggedIn) {
       if (user.contains("User")) {
         _getKizilayData(user);

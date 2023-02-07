@@ -55,6 +55,9 @@ class TalepTile extends StatelessWidget {
                     fontSize: mediaSize.width * .02,
                     color: projectRed),
               ),
+              SizedBox(
+                height: mediaSize.height * .006,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -70,7 +73,7 @@ class TalepTile extends StatelessWidget {
                   SvgPicture.asset(
                     "assets/ic_talep_$durum.svg",
                     colorFilter: ColorFilter.mode(projectRed, BlendMode.srcIn),
-                    height: mediaSize.height * .039,
+                    height: mediaSize.width * .056,
                   ),
                 ],
               ),
