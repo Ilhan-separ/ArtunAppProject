@@ -53,7 +53,7 @@ class _THomePageState extends State<THomePage> {
               itemBuilder: (context) => [
                 PopupMenuItem(
                   child: Text("Çıkış"),
-                  onTap: () {
+                  onTap: () async {
                     Provider.of<AppStateManager>(context, listen: false)
                         .logout();
                   },

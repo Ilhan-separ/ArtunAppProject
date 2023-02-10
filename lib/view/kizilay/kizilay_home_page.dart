@@ -37,13 +37,8 @@ class _KhomePageState extends State<KhomePage> {
     const KanStokPage(),
   ];
 
-  Future<void> yazdir() async {
-    print(await SessionManager().get("id"));
-  }
-
   @override
   Widget build(BuildContext context) {
-    yazdir();
     return Consumer<AppStateManager>(
       builder: (context, tabManager, child) => Scaffold(
         appBar: AppBar(
@@ -60,7 +55,7 @@ class _KhomePageState extends State<KhomePage> {
               itemBuilder: (context) => [
                 PopupMenuItem(
                   child: Text("Çıkış"),
-                  onTap: () {
+                  onTap: () async {
                     Provider.of<AppStateManager>(context, listen: false)
                         .logout();
                   },

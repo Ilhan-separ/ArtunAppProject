@@ -1,4 +1,5 @@
 import 'package:artun_flutter_project/constants.dart';
+import 'package:artun_flutter_project/view/details_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +35,6 @@ double _currentUserLng = 1;
 String _currentUser = "";
 String _currentUserName = "";
 List<String> stok = [];
-bool _isStokExist = true;
 int index = -2;
 List<double> distance = [];
 List<int> stokMevcutIndexler = [];
@@ -66,44 +66,34 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
 
   void stokListDoldur() {
     stok = [];
-    for (var i = 0; i < 3; i++) {
-      print("Widget Unite Sayisi : ${widget.uniteSayisi}");
+    for (var i = 0; i < widget.dbKizilayMap!.length; i++) {
       if (widget.uniteSayisi <=
           widget.dbKizilayMap![i]["kanStogu"][widget.kanGrubuText]) {
         stok.add("Var");
       } else {
         stok.add("Yok");
       }
-      print(
-          "db Stok : ${widget.dbKizilayMap![i]["kanStogu"][widget.kanGrubuText]}");
-      print("stok : ${stok[i]}");
-    }
-    _printStok();
-  }
-
-  void _printStok() {
-    for (var i = 0; i < stok.length; i++) {
-      print("print stokList : ${stok[i]}");
     }
   }
 
+  // En Yakın Ve Stoğu Olan Kızlıay Indexini Bulur.
   int _getOptimalKizilayIndex() {
+    //Stok ve araç olna indexleri ayırır.
     stokMevcutIndexler = [];
-    for (var i = 0; i < 3; i++) {
-      if (stok[i] == "Var") {
+    for (var i = 0; i < widget.dbKizilayMap!.length; i++) {
+      if (stok[i] == "Var" && widget.dbKizilayMap![i]["arac"] == "Var") {
         stokMevcutIndexler.add(i);
       }
     }
 
+    //Uygun index yoksa alert değeri gönderir.
     if (stokMevcutIndexler.isEmpty) {
-      setState(() {
-        _isStokExist = false;
-      });
       return -1;
     }
 
+    //Uzaklıkları hesaplar
     distance = [];
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < widget.dbKizilayMap!.length; i++) {
       var uzaklik = getDistanceBetween(
         _userLat,
         widget.dbKizilayMap![i]["lat"],
@@ -112,15 +102,15 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
       );
       distance.add(double.parse(uzaklik));
     }
+
+    //En kısa uzaklığı bulup o indexin kızılayına talep iletilir.
     var temp;
     if (stokMevcutIndexler.length == 1) {
       return stokMevcutIndexler[0];
     } else {
       for (var i = 0; i < stokMevcutIndexler.length; i++) {
         for (var j = 0; j < stokMevcutIndexler.length; j++) {
-          print("distanclar ${distance[stokMevcutIndexler[i]]}");
-          print(
-              "Stok mevcut index : ${stokMevcutIndexler[i]}"); //TODO: Printleri sil stok yoksa uyarı mesajı koy.
+          //print("distanclar ${distance[stokMevcutIndexler[i]]}");
           if (distance[stokMevcutIndexler[i]] <
               distance[stokMevcutIndexler[j]]) {
             index = stokMevcutIndexler[i];
@@ -132,10 +122,6 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
     return index;
   }
 
-  // void _getDistanceList(List<double> distance) {}
-
-  // void _stokIndexBul(List<int> stokMevcutIndexler) {}
-
   int _kizilayIndex = 0;
   double _userLat = 1;
   double _userLng = 1;
@@ -143,6 +129,7 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
   Widget build(BuildContext context) {
     _userLat = Provider.of<AppStateManager>(context).getCurrentUserLat;
     _userLng = Provider.of<AppStateManager>(context).getCurrentUserLng;
+
     stokListDoldur();
     return Scaffold(
       appBar: AppBar(
@@ -177,48 +164,19 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
                 children: [
                   Column(
                     children: [
-                      _detayContainer(
-                        context,
-                        widget.dbKizilayMap![0]["name"],
-                        widget.dbKizilayMap![0]["arac"],
-                        stok[0],
-                        getDistanceBetween(
-                          _userLat,
-                          widget.dbKizilayMap![0]["lat"],
-                          _userLng,
-                          widget.dbKizilayMap![0]["lng"],
+                      for (var i = 0; i < widget.dbKizilayMap!.length; i++)
+                        _detayContainer(
+                          context,
+                          widget.dbKizilayMap![i]["name"],
+                          widget.dbKizilayMap![i]["arac"],
+                          stok[0],
+                          getDistanceBetween(
+                            _userLat,
+                            widget.dbKizilayMap![i]["lat"],
+                            _userLng,
+                            widget.dbKizilayMap![i]["lng"],
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * .048,
-                      ),
-                      _detayContainer(
-                        context,
-                        widget.dbKizilayMap![1]["name"],
-                        widget.dbKizilayMap![1]["arac"],
-                        stok[1],
-                        getDistanceBetween(
-                          _userLat,
-                          widget.dbKizilayMap![1]["lat"],
-                          _userLng,
-                          widget.dbKizilayMap![1]["lng"],
-                        ),
-                      ),
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * .048,
-                      ),
-                      _detayContainer(
-                        context,
-                        widget.dbKizilayMap![2]["name"],
-                        widget.dbKizilayMap![2]["arac"],
-                        stok[2],
-                        getDistanceBetween(
-                          _userLat,
-                          widget.dbKizilayMap![2]["lat"],
-                          _userLng,
-                          widget.dbKizilayMap![2]["lng"],
-                        ),
-                      ),
                       SizedBox(
                         height: MediaQuery.of(context).size.height * .02,
                       ),
@@ -245,8 +203,7 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 TextButton(
-                  onPressed: () =>
-                      _getOptimalKizilayIndex(), //Navigator.of(context).pop(),
+                  onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     "Geri",
                     style: GoogleFonts.robotoMono(
@@ -272,29 +229,100 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
 
                     //TODO: Saat formatı değişebilir.
                     String dt = DateFormat("HH:mm").format(DateTime.now());
-                    setState(() {});
                     optimumIndex = _getOptimalKizilayIndex();
-                    print("Yazılacak index : $optimumIndex");
-                    // dbTalepMap.addAll({
-                    //   "kanGrubu": widget.kanGrubuText,
-                    //   "unite": widget.uniteSayisi,
-                    //   "talepEdenID": _currentUser,
-                    //   "talepEden": _currentUserName,
-                    //   "talepEdenLat": _currentUserLat,
-                    //   "talepEdenLng": _currentUserLng,
-                    //   "kizilay": widget.dbKizilayMap![1]["name"],
-                    //   "kizilayID": widget.dbKizilayMap![1]["id"],
-                    //   "kizilayLat": widget.dbKizilayMap![1]["lat"],
-                    //   "kizilayLng": widget.dbKizilayMap![1]["lng"],
-                    //   "durum": "iletildi",
-                    //   "id": "",
-                    //   "olusturmaSaati": dt,
-                    //   "kalkisSaati": "",
-                    // });
-                    // await taleplerRef.add(dbTalepMap).then((value) {
-                    //   taleplerRef.doc(value.id).update({"id": value.id});
-                    // });
-                    // Navigator.of(context).pop();
+
+                    if (optimumIndex < 0) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Icon(
+                            Icons.cancel_outlined,
+                            color: projectRed,
+                            size: 46,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          content: Text(
+                            "Maalesef talebinizi karşılayacak uygun kızılay yok.",
+                            style: GoogleFonts.roboto(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.only(left: 12),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  var count = 0;
+                                  Navigator.popUntil(context, (route) {
+                                    return count++ == 2;
+                                  });
+                                },
+                                child: Text(
+                                  "Tamam",
+                                  style: TextStyle(
+                                      color: projectRed,
+                                      fontWeight: FontWeight.bold),
+                                ))
+                          ],
+                        ),
+                      );
+                    } else {
+                      dbTalepMap.addAll({
+                        "kanGrubu": widget.kanGrubuText,
+                        "unite": widget.uniteSayisiText,
+                        "talepEdenID": _currentUser,
+                        "talepEden": _currentUserName,
+                        "talepEdenLat": _currentUserLat,
+                        "talepEdenLng": _currentUserLng,
+                        "kizilay": widget.dbKizilayMap![optimumIndex]["name"],
+                        "kizilayID": widget.dbKizilayMap![optimumIndex]["id"],
+                        "kizilayLat": widget.dbKizilayMap![optimumIndex]["lat"],
+                        "kizilayLng": widget.dbKizilayMap![optimumIndex]["lng"],
+                        "durum": "iletildi",
+                        "id": "",
+                        "olusturmaSaati": dt,
+                        "kalkisSaati": "",
+                      });
+                      await taleplerRef.add(dbTalepMap).then((value) {
+                        taleplerRef.doc(value.id).update({"id": value.id});
+                      });
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Icon(
+                            Icons.done_outline_rounded,
+                            color: projectCyan,
+                            size: 46,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          content: Text(
+                            "Talebiniz başarıyla iletildi.",
+                            style:
+                                GoogleFonts.roboto(fontWeight: FontWeight.bold),
+                          ),
+                          contentPadding: EdgeInsets.all(40),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  var count = 0;
+                                  Navigator.popUntil(context, (route) {
+                                    return count++ == 2;
+                                  });
+                                },
+                                child: Text(
+                                  "Tamam",
+                                  style: TextStyle(
+                                      color: projectRed,
+                                      fontWeight: FontWeight.bold),
+                                ))
+                          ],
+                        ),
+                      );
+                    } //else ends
                   },
                   child: Text(
                     "Onaylıyorum",
@@ -347,108 +375,115 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
     );
   }
 
-  Container _detayContainer(BuildContext context, name, arac, stok, distance) {
-    return Container(
-      padding: EdgeInsets.only(left: 16, right: 16, bottom: 24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        color: Colors.white,
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromARGB(25, 0, 0, 0),
-            offset: Offset(1, 2),
-            spreadRadius: .3,
-            blurRadius: 4.2,
-          ),
-        ],
-      ),
-      width: MediaQuery.of(context).size.width * .8,
-      height: MediaQuery.of(context).size.height * .18,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: projectRed,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            width: MediaQuery.of(context).size.width * .34,
-            height: MediaQuery.of(context).size.height * .04,
-            child: Center(
-              child: Text(
-                name,
-                style: GoogleFonts.robotoMono(
-                  color: Colors.white,
-                  fontSize: MediaQuery.of(context).size.width * .03,
-                ),
+  Widget _detayContainer(BuildContext context, name, arac, stok, distance) {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.only(left: 16, right: 16, bottom: 24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            color: Colors.white,
+            boxShadow: const [
+              BoxShadow(
+                color: Color.fromARGB(25, 0, 0, 0),
+                offset: Offset(1, 2),
+                spreadRadius: .3,
+                blurRadius: 4.2,
               ),
-            ),
+            ],
           ),
-          Row(
+          width: MediaQuery.of(context).size.width * .8,
+          height: MediaQuery.of(context).size.height * .18,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    "Stok : ",
-                    style: GoogleFonts.robotoMono(
-                      fontSize: MediaQuery.of(context).size.width * .036,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    stok,
-                    style: GoogleFonts.robotoMono(
-                      color: projectRed,
-                      fontSize: MediaQuery.of(context).size.width * .036,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Text(
-                    "Müsait Araç : ",
-                    style: GoogleFonts.robotoMono(
-                      fontSize: MediaQuery.of(context).size.width * .036,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    arac,
-                    style: GoogleFonts.robotoMono(
-                      color: projectRed,
-                      fontSize: MediaQuery.of(context).size.width * .036,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Text(
-                "Uzaklık : ",
-                style: GoogleFonts.robotoMono(
-                  fontSize: MediaQuery.of(context).size.width * .036,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                "$distance km",
-                style: GoogleFonts.robotoMono(
+              Container(
+                decoration: BoxDecoration(
                   color: projectRed,
-                  fontSize: MediaQuery.of(context).size.width * .036,
-                  fontWeight: FontWeight.w400,
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                width: MediaQuery.of(context).size.width * .34,
+                height: MediaQuery.of(context).size.height * .04,
+                child: Center(
+                  child: Text(
+                    name,
+                    style: GoogleFonts.robotoMono(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.width * .03,
+                    ),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        "Stok : ",
+                        style: GoogleFonts.robotoMono(
+                          fontSize: MediaQuery.of(context).size.width * .036,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        stok,
+                        style: GoogleFonts.robotoMono(
+                          color: projectRed,
+                          fontSize: MediaQuery.of(context).size.width * .036,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        "Müsait Araç : ",
+                        style: GoogleFonts.robotoMono(
+                          fontSize: MediaQuery.of(context).size.width * .036,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        arac,
+                        style: GoogleFonts.robotoMono(
+                          color: projectRed,
+                          fontSize: MediaQuery.of(context).size.width * .036,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                    "Uzaklık : ",
+                    style: GoogleFonts.robotoMono(
+                      fontSize: MediaQuery.of(context).size.width * .036,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    "$distance km",
+                    style: GoogleFonts.robotoMono(
+                      color: projectRed,
+                      fontSize: MediaQuery.of(context).size.width * .036,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * .048,
+        ),
+      ],
     );
   }
 

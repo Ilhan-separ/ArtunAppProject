@@ -36,13 +36,17 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
       }
     });
     if (userSpesificTalepList.isEmpty) {
-      setState(() {
-        isTalepExist = false;
-      });
+      if (mounted) {
+        setState(() {
+          isTalepExist = false;
+        });
+      }
     } else {
-      setState(() {
-        isTalepExist = true;
-      });
+      if (mounted) {
+        setState(() {
+          isTalepExist = true;
+        });
+      }
     }
   }
 

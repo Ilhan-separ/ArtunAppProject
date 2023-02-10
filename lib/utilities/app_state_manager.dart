@@ -39,7 +39,7 @@ class AppStateManager extends ChangeNotifier {
 
   void initializedApp() {
     Timer(
-      const Duration(milliseconds: 2500),
+      const Duration(milliseconds: 3000),
       () {
         _initialized = true; //TODO: açılışta log işlemlerini yap.
         notifyListeners();
@@ -173,7 +173,8 @@ class AppStateManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() {
+  Future<void> logout() async {
+    await SessionManager().destroy.call();
     _kLoggedIn = false;
     _tLoggedIn = false;
     _kizilaySelectedTab = 0;
@@ -183,7 +184,6 @@ class AppStateManager extends ChangeNotifier {
     _throwLoginAlert = false;
     _currentUserID = "";
     _currentUserName = "";
-    SessionManager().destroy;
 
     initializedApp();
     notifyListeners();

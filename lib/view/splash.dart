@@ -36,9 +36,10 @@ class _SplashScreenState extends State<SplashScreen> {
             future: Provider.of<AppStateManager>(context).isAlreadyLogged(),
             builder: (context, snapshot) => const Text(""),
           ),
-          const Image(
-            image: AssetImage('assets/uzay_havacilik.png'),
-            height: 200,
+          Image(
+            image: AssetImage('assets/artun_iha.png'),
+            height: MediaQuery.of(context).size.height * .3,
+            width: MediaQuery.of(context).size.width * .70,
           ),
           const SizedBox(
             height: 24.0,

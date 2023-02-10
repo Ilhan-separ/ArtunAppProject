@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 import 'dart:math' as math;
 import '../constants.dart';
@@ -39,6 +42,18 @@ class _DetailsPageState extends State<DetailsPage> {
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
+
+  DatabaseReference estimatedTimeRef =
+      FirebaseDatabase.instance.ref("Delivery/estimated_delivery_time");
+  DatabaseReference durumRef = FirebaseDatabase.instance.ref("Delivery/durum");
+
+  DatabaseReference isDeliveredRef = FirebaseDatabase.instance.ref("Delivery/");
+  DatabaseReference hastaneLocRef =
+      FirebaseDatabase.instance.ref("HospitalLocation/");
+  DatabaseReference liveLocationLatRef =
+      FirebaseDatabase.instance.ref("Live/live_location_lat");
+  DatabaseReference liveLocationLngRef =
+      FirebaseDatabase.instance.ref("Live/live_location_long");
 
   // Uzaklık Hesaplaması
   String getDistanceBetween(
@@ -71,6 +86,7 @@ class _DetailsPageState extends State<DetailsPage> {
 
   late LatLng _kizilay;
   late LatLng _hastane;
+  var _currentLocation;
 
   List<LatLng> polyLineCoordinates = [];
 
@@ -92,11 +108,13 @@ class _DetailsPageState extends State<DetailsPage> {
     }
   }
 
-  // void getCurrentLocation() {} Burdan mevcut lokasyonu çekebilirim.
-
   Set<Marker> setMarkers() {
     _kizilay = LatLng(widget.kizilayLat, widget.kizilayLng);
     _hastane = LatLng(widget.talepciLat, widget.talepciLng);
+    var _currentLocation = Marker(
+        markerId: MarkerId("currentLoc"),
+        position: LatLng(-35.36250808785522, 149.1650383646676));
+
     return {
       Marker(
           markerId: MarkerId("kizilay"),
@@ -104,36 +122,121 @@ class _DetailsPageState extends State<DetailsPage> {
       Marker(
           markerId: MarkerId("hastane"),
           position: LatLng(widget.talepciLat, widget.talepciLng)),
+      _currentLocation,
     };
   }
 
   Set<Marker> _markers = {};
   String _currentUserId = "";
-  String _droneDurum = "Hazırlanıyor";
+  String _droneDurum = "-";
+  String _estimatedTime = "-";
+
+  num _liveLat = -35.36257681520932;
+  num _liveLng = 149.1652430341935;
 
   @override
   void initState() {
     _markers = setMarkers();
+
+    setDbCurrentValues();
     getPolyPoints();
-    switch (widget.userSpesicifTalepList!["durum"]) {
-      case "iletildi":
-        _droneDurum = "Hazırlanıyor";
-        break;
-      case "yolda":
-        _droneDurum = "Yolda";
-        break;
-      case "vardı":
-        _droneDurum = "Vardı";
-        break;
-      default:
-    }
+
     super.initState();
+  }
+
+  late Stream<DocumentSnapshot<Map<String, dynamic>>> myStream;
+
+  late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>
+      durumSubscription;
+  late StreamSubscription<DatabaseEvent> liveLatListen;
+  late StreamSubscription<DatabaseEvent> liveLngListen;
+  late StreamSubscription<DatabaseEvent> estimatedListen;
+
+  Future<void> setDbCurrentValues() async {
+    myStream = FirebaseFirestore.instance
+        .collection("Talepler")
+        .doc(widget.userSpesicifTalepList!["id"])
+        .snapshots();
+
+    liveLatListen = liveLocationLatRef.onValue.listen(
+      (event) {
+        final data = event.snapshot.value;
+        if (mounted) {
+          setState(() {
+            _liveLat = data as num;
+            print(" data Lat : $_liveLat");
+          });
+        }
+      },
+    );
+
+    liveLngListen = liveLocationLngRef.onValue.listen(
+      (event) {
+        final data = event.snapshot.value;
+        if (mounted) {
+          setState(() {
+            _liveLng = data as num;
+            print(" data Lng : $_liveLng");
+          });
+        }
+      },
+    );
+    estimatedListen = estimatedTimeRef.onValue.listen(
+      (event) {
+        final data = event.snapshot.value;
+        if (mounted) {
+          setState(() {
+            _estimatedTime = data as String;
+          });
+        }
+        print(" estimated Time :  $data");
+      },
+    );
+
+    durumSubscription = myStream.listen((event) {
+      final data = event.data() as Map<String, dynamic>;
+      if (mounted) {
+        setState(() {
+          _droneDurum = data["durum"];
+        });
+      }
+      print("drone Durum : $_droneDurum");
+    });
+
+    // mapController?.animateCamera(
+    //   CameraUpdate.newCameraPosition(
+    //     CameraPosition(zoom: 18.8, target: LatLng(_liveLat, _liveLng)),
+    //   ),
+    // );
+
+    setState(() {
+      _markers.removeWhere((m) => m.markerId.value == "currentLoc");
+      _markers.add(
+        Marker(
+          markerId: MarkerId("currentLoc"),
+          position: LatLng(_liveLat.toDouble(), _liveLng.toDouble()),
+        ),
+      );
+      print(
+          "LooooooooooooooooooooooooooooooooASDASFZXCAS ${LatLng(_liveLat.toDouble(), _liveLng.toDouble())}");
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
     _currentUserId = Provider.of<AppStateManager>(context).getCurrentUserID;
+  }
+
+  @override
+  void dispose() {
+    durumSubscription.cancel();
+    liveLatListen.cancel();
+    liveLngListen.cancel();
+    estimatedListen.cancel();
+    mapController!.dispose();
+    super.dispose();
   }
 
   bool _isBackClicked = false;
@@ -164,230 +267,269 @@ class _DetailsPageState extends State<DetailsPage> {
               }
             }),
       ),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Stack(
-          children: [
-            Stack(
-              children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.50,
-                  width: MediaQuery.of(context).size.width,
-                ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.52,
-                  child: ClipRRect(
-                    child: buildGoogleMaps(),
+      body: FutureBuilder(
+        future: setDbCurrentValues(),
+        builder: (context, snapshot) => SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Stack(
+            children: [
+              Stack(
+                children: [
+                  // SizedBox(
+                  //   height: MediaQuery.of(context).size.height * 0.50,
+                  //   width: MediaQuery.of(context).size.width,
+                  // ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.52,
+                    child: ClipRRect(
+                      child: buildGoogleMaps(),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.43,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(48),
-                  color: Colors.white,
-                ),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      height: 6,
-                      width: 70,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        color: projectCyan,
+                ],
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.43,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(48),
+                    color: Colors.white,
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 10,
                       ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        child: ListView(
-                          physics: BouncingScrollPhysics(
-                              parent: FixedExtentScrollPhysics()),
-                          children: [
-                            Column(
-                              children: [
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Container(
-                                  // Kan Grubu Ve Ünite Sayısı Bilgisi
+                      Container(
+                        height: 6,
+                        width: 70,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color: projectCyan,
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.all(10),
+                          child: ListView(
+                            physics: BouncingScrollPhysics(
+                                parent: FixedExtentScrollPhysics()),
+                            children: [
+                              Column(
+                                children: [
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Container(
+                                    // Kan Grubu Ve Ünite Sayısı Bilgisi
 
-                                  padding: EdgeInsets.only(left: 24, right: 12),
-                                  child: Column(children: [
-                                    _kanGrubuVeUniteRow(
-                                        "Kan Grubu",
-                                        widget.userSpesicifTalepList![
-                                            dbDocKanGrubu]),
-                                    SizedBox(
-                                      height: 12,
+                                    padding:
+                                        EdgeInsets.only(left: 24, right: 12),
+                                    child: Column(children: [
+                                      _kanGrubuVeUniteRow(
+                                          "Kan Grubu",
+                                          widget.userSpesicifTalepList![
+                                              dbDocKanGrubu]),
+                                      SizedBox(
+                                        height: 12,
+                                      ),
+                                      _kanGrubuVeUniteRow(
+                                          "Ünite",
+                                          widget.userSpesicifTalepList![
+                                              dbDocKanUnite]),
+                                    ]),
+                                  ),
+                                  const Divider(
+                                    height: 24,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _droneDurumContainer(context),
+                                      _estimatedTimeContainer(context),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 16,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.grey[100],
+                                          borderRadius:
+                                              BorderRadius.circular(24)),
+                                      padding: const EdgeInsets.only(
+                                          left: 20,
+                                          right: 12,
+                                          top: 10,
+                                          bottom: 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              _kalkisVeVarisBuilder(
+                                                  "Kalkış", "kalkis"),
+                                              Text(
+                                                widget.userSpesicifTalepList![
+                                                    dbDocKizilay],
+                                                style: GoogleFonts.roboto(
+                                                  textStyle: TextStyle(
+                                                    fontSize: 20,
+                                                    color: projectRed,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Row(
+                                            children: [
+                                              const SizedBox(
+                                                width: 8,
+                                              ),
+                                              Image.asset(
+                                                  "assets/ic_boslukluCizgi.png"),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              _kalkisVeVarisBuilder(
+                                                  "Varış", "varis"),
+                                              Text(
+                                                widget.userSpesicifTalepList![
+                                                    dbDocTalepEden],
+                                                style: GoogleFonts.roboto(
+                                                  textStyle: TextStyle(
+                                                    fontSize: 20,
+                                                    color: projectRed,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
                                     ),
-                                    _kanGrubuVeUniteRow(
-                                        "Ünite",
-                                        widget.userSpesicifTalepList![
-                                            dbDocKanUnite]),
-                                  ]),
-                                ),
-                                const Divider(
-                                  height: 24,
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _droneDurumBuilder(context),
-                                    Text("Estimated time"),
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 16,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.grey[100],
-                                        borderRadius:
-                                            BorderRadius.circular(24)),
-                                    padding: const EdgeInsets.only(
-                                        left: 20,
-                                        right: 12,
-                                        top: 10,
-                                        bottom: 10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                  ),
+                                  const Divider(
+                                    height: 32,
+                                  ),
+                                  ListTile(
+                                    title: Text(
+                                      'Uzaklık',
+                                      style: GoogleFonts.roboto(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    dense: true,
+                                    subtitle: Text(
+                                      "${getDistanceBetween(
+                                        _hastane.latitude,
+                                        _kizilay.latitude,
+                                        _hastane.longitude,
+                                        _kizilay.longitude,
+                                      )} km",
+                                      style: GoogleFonts.roboto(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey[600]),
+                                    ),
+                                    trailing: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            _kalkisVeVarisBuilder(
-                                                "Kalkış", "kalkis"),
-                                            Text(
-                                              widget.userSpesicifTalepList![
-                                                  dbDocKizilay],
-                                              style: GoogleFonts.roboto(
-                                                textStyle: TextStyle(
-                                                  fontSize: 20,
-                                                  color: projectRed,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                        Text(
+                                          "Talebin Oluşturulma Saati",
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                        const SizedBox(
-                                          height: 4,
+                                        Text(
+                                          widget.userSpesicifTalepList![
+                                              dbDocOlusturulmaSaati],
+                                          style: GoogleFonts.roboto(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey[600],
+                                            fontSize: 12,
+                                          ),
                                         ),
-                                        Row(
-                                          children: [
-                                            const SizedBox(
-                                              width: 8,
-                                            ),
-                                            Image.asset(
-                                                "assets/ic_boslukluCizgi.png"),
-                                          ],
-                                        ),
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            _kalkisVeVarisBuilder(
-                                                "Varış", "varis"),
-                                            Text(
-                                              widget.userSpesicifTalepList![
-                                                  dbDocTalepEden],
-                                              style: GoogleFonts.roboto(
-                                                textStyle: TextStyle(
-                                                  fontSize: 20,
-                                                  color: projectRed,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        )
                                       ],
                                     ),
                                   ),
-                                ),
-                                const Divider(
-                                  height: 32,
-                                ),
-                                ListTile(
-                                  title: Text(
-                                    'Uzaklık',
-                                    style: GoogleFonts.roboto(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  dense: true,
-                                  subtitle: Text(
-                                    "${getDistanceBetween(_kizilay.latitude, _hastane.latitude, _kizilay.longitude, _hastane.longitude)} km",
-                                    style: GoogleFonts.roboto(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.grey[600]),
-                                  ),
-                                  trailing: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "Talebin Oluşturulma Saati",
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      Text(
-                                        widget.userSpesicifTalepList![
-                                            dbDocOlusturulmaSaati],
-                                        style: GoogleFonts.roboto(
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(bottom: 8, left: 8, right: 8),
-                      child: _currentUserId ==
-                              widget.userSpesicifTalepList!["kizilayID"]
-                          ? _kizilayElevatedButtonControl()
-                          : ElevatedButton(
-                              onPressed: () async =>
-                                  widget.userSpesicifTalepList!["durum"] !=
-                                          "yolda"
-                                      ? null
-                                      : _showHastaneOnayDialog(context),
-                              child: Center(
-                                child: _droneDurum == "Yolda"
-                                    ? Text("Paketi Aldım")
-                                    : Icon(Icons.clear),
-                              ),
-                            ),
-                    )
-                  ],
+                      Container(
+                        margin: EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                        child: _currentUserId ==
+                                widget.userSpesicifTalepList!["kizilayID"]
+                            ? _kizilayElevatedButtonControl(context)
+                            : _hastaneElevatedButtonControl(context),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Container _estimatedTimeContainer(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+          color: projectCyan.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(24)),
+      constraints: BoxConstraints.tightFor(
+        width: MediaQuery.of(context).size.width * .30,
+        height: MediaQuery.of(context).size.height * .09,
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Text(
+              "Tahmini Varış",
+              style: GoogleFonts.roboto(
+                textStyle: TextStyle(
+                  fontSize: 14,
+                  color: projectRed,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Text(
+              _estimatedTime.toString(),
+              style: GoogleFonts.roboto(
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -397,19 +539,25 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
-  ElevatedButton _kizilayElevatedButtonControl() {
+  ElevatedButton _hastaneElevatedButtonControl(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () async => widget.userSpesicifTalepList!["durum"] != "yolda"
+          ? null
+          : _showHastaneOnayDialog(context),
+      child: Center(
+        child:
+            _droneDurum == "Yolda" ? Text("Paketi Aldım") : Icon(Icons.clear),
+      ),
+    );
+  }
+
+  ElevatedButton _kizilayElevatedButtonControl(context) {
     return ElevatedButton(
       onPressed: () async {
         String dt = DateFormat("HH:mm").format(DateTime.now());
         widget.userSpesicifTalepList![dbDocDroneDurum] == "iletildi"
             ? {
-                await FirebaseFirestore.instance
-                    .collection("Talepler")
-                    .doc(widget.userSpesicifTalepList!["id"])
-                    .update({dbDocDroneDurum: "yolda", dbDocKalkisSaati: dt}),
-                setState(() {
-                  _droneDurum = "Yolda";
-                }),
+                _showKizilayOnayDialog(dt, context),
               }
             : null;
       },
@@ -417,9 +565,48 @@ class _DetailsPageState extends State<DetailsPage> {
         backgroundColor: projectCyan,
       ),
       child: Center(
-        child: _droneDurum == "Hazırlanıyor"
-            ? Text("Yola Çık")
-            : Icon(Icons.clear),
+        child: _droneDurum == "iletildi" ? Text("Yola Çık") : Icon(Icons.clear),
+      ),
+    );
+  }
+
+  Future<dynamic> _showKizilayOnayDialog(String dt, context) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text("Dronun yola çıkmasını onaylıyor musunuz?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              "Geri",
+              style: TextStyle(
+                color: Colors.blueGrey[400],
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              //TODO: Dronun varmış olma durmunu drondan gelen veriler ile algılayacağım.
+
+              await FirebaseFirestore.instance
+                  .collection("Talepler")
+                  .doc(widget.userSpesicifTalepList!["id"])
+                  .update({dbDocDroneDurum: "yolda", dbDocKalkisSaati: dt});
+              await hastaneLocRef.set({
+                "hospitalLocation_lat": widget.talepciLat,
+                "hospitalLocation_long": widget.talepciLng,
+              });
+
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              "Onaylıyorum",
+              style: TextStyle(color: projectCyan, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -449,8 +636,8 @@ class _DetailsPageState extends State<DetailsPage> {
                   .doc(widget.userSpesicifTalepList!["id"])
                   .update({dbDocDroneDurum: "vardı"});
 
-              setState(() {
-                _droneDurum = "Vardı";
+              await isDeliveredRef.set({
+                "isDelivered": true,
               });
               Navigator.of(context).pop();
             },
@@ -486,14 +673,16 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
-  Widget _droneDurumBuilder(BuildContext context) {
+  Widget _droneDurumContainer(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
           color: Color.fromARGB(60, 220, 198, 198),
           borderRadius: BorderRadius.circular(24)),
       constraints: BoxConstraints.tightFor(
-          width: MediaQuery.of(context).size.width * .52, height: 65),
+        width: MediaQuery.of(context).size.width * .52,
+        height: MediaQuery.of(context).size.height * .09,
+      ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -509,7 +698,7 @@ class _DetailsPageState extends State<DetailsPage> {
               ),
             ),
             Text(
-              _droneDurum,
+              _droneDurum.toUpperCase(),
               style: GoogleFonts.roboto(
                 textStyle: const TextStyle(
                   fontSize: 16,
@@ -581,8 +770,10 @@ class _DetailsPageState extends State<DetailsPage> {
         },
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
-          target: _hastane,
-          zoom: 14,
+          target: _kizilay,
+          zoom: 17,
+          tilt: 50,
+          bearing: 30,
         ),
         zoomControlsEnabled: false,
         polylines: {
@@ -591,7 +782,7 @@ class _DetailsPageState extends State<DetailsPage> {
             visible: true,
             zIndex: 1,
             points: [_kizilay, _hastane],
-            color: Colors.purpleAccent,
+            color: projectCyan,
             width: 3,
           ),
         },
