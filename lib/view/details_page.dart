@@ -12,7 +12,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
+import 'dart:ui' as ui;
 import 'dart:math' as math;
 import '../constants.dart';
 
@@ -84,8 +87,6 @@ class _DetailsPageState extends State<DetailsPage> {
   // Kütahya Kalesi : 39.419384182446386, 29.970091345344922 k
   // Hazer Dinari : 39.395094507654825, 30.033696096436383 k
 
-  late LatLng _kizilay;
-  late LatLng _hastane;
   var _currentLocation;
 
   List<LatLng> polyLineCoordinates = [];
@@ -96,8 +97,8 @@ class _DetailsPageState extends State<DetailsPage> {
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
         google_api_key,
-        PointLatLng(_kizilay.latitude, _kizilay.longitude),
-        PointLatLng(_hastane.latitude, _hastane.longitude));
+        PointLatLng(widget.kizilayLat, widget.kizilayLng),
+        PointLatLng(widget.talepciLat, widget.talepciLng));
 
     if (result.points.isNotEmpty) {
       result.points.forEach(
@@ -108,25 +109,103 @@ class _DetailsPageState extends State<DetailsPage> {
     }
   }
 
-  Set<Marker> setMarkers() {
-    _kizilay = LatLng(widget.kizilayLat, widget.kizilayLng);
-    _hastane = LatLng(widget.talepciLat, widget.talepciLng);
-    var _currentLocation = Marker(
-        markerId: MarkerId("currentLoc"),
-        position: LatLng(-35.36250808785522, 149.1650383646676));
+//   Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(BuildContext context, String assetName) async {
+//     // Read SVG file as String
+//     String svgString = await DefaultAssetBundle.of(context).loadString(assetName);
 
-    return {
-      Marker(
-          markerId: MarkerId("kizilay"),
-          position: LatLng(widget.kizilayLat, widget.kizilayLng)),
-      Marker(
-          markerId: MarkerId("hastane"),
-          position: LatLng(widget.talepciLat, widget.talepciLng)),
-      _currentLocation,
-    };
+//     // Create DrawableRoot from SVG String
+//      DrawableRoot svgDrawableRoot = await svg.fromSvgString(svgString, null);
+
+//     // toPicture() and toImage() don't seem to be pixel ratio aware, so we calculate the actual sizes here
+//     MediaQueryData queryData = MediaQuery.of(context);
+//     double devicePixelRatio = queryData.devicePixelRatio;
+//     double width = 32 * devicePixelRatio; // where 32 is your SVG's original width
+//     double height = 32 * devicePixelRatio; // same thing
+
+//     // Convert to ui.Picture
+//     ui.Picture picture = svgDrawableRoot.toPicture(size: Size(width, height));
+
+//     // Convert to ui.Image. toImage() takes width and height as parameters
+//     // you need to find the best size to suit your needs and take into account the
+//     // screen DPI
+//     ui.Image image = await picture.toImage(width, height);
+//     ByteData bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+//     return BitmapDescriptor.fromBytes(bytes.buffer.asUint8List());
+// }
+
+  Future<Uint8List> getBytesFromAsset(
+      {required String path, required int width}) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
+        targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+        .buffer
+        .asUint8List();
   }
 
-  Set<Marker> _markers = {};
+  BitmapDescriptor hastaneIcon = BitmapDescriptor.defaultMarker;
+  BitmapDescriptor kizilayIcon = BitmapDescriptor.defaultMarker;
+  BitmapDescriptor currentLocationIcon = BitmapDescriptor.defaultMarker;
+
+  Future<void> setCustomMarkerIcon() async {
+    // BitmapDescriptor.fromAssetImage(
+    //         const ImageConfiguration(), "assets/ic_hastane_marker.png")
+    //     .then(
+    //   (icon) {
+    //     hastaneIcon = icon;
+    //   },
+    // );
+    // BitmapDescriptor.fromAssetImage(
+    //         const ImageConfiguration(), "assets/ic_kizilay_marker.png")
+    //     .then(
+    //   (icon) {
+    //     kizilayIcon = icon;
+    //   },
+    // );
+    // BitmapDescriptor.fromAssetImage(
+    //         ImageConfiguration.empty, "assets/Badge.png")
+    //     .then(
+    //   (icon) {
+    //     currentLocationIcon = icon;
+    //   },
+    // );
+
+    final Uint8List hastaneMarker = await getBytesFromAsset(
+        path: "assets/ic_hastane_marker.png", //paste the custom image path
+        width: 60 // size of custom image as marker
+        );
+    final Uint8List kizilayMarker = await getBytesFromAsset(
+        path: "assets/ic_kizilay_marker.png", //paste the custom image path
+        width: 60 // size of custom image as marker
+        );
+
+    //TODO: current position marker değişecek, markerlar png o yüzden hafif bozuklar o düzeltilerbilir.
+
+    // _kizilay = LatLng(widget.kizilayLat, widget.kizilayLng);
+    // _hastane = LatLng(widget.talepciLat, widget.talepciLng);
+
+    _markers.add(
+      Marker(
+        markerId: MarkerId("kizilay"),
+        icon: BitmapDescriptor.fromBytes(kizilayMarker),
+        position: LatLng(widget.kizilayLat, widget.kizilayLng),
+      ),
+    );
+    _markers.add(
+      Marker(
+        markerId: MarkerId("hastane"),
+        icon: BitmapDescriptor.fromBytes(hastaneMarker),
+        position: LatLng(widget.talepciLat, widget.talepciLng),
+      ),
+    );
+    _markers.add(Marker(
+        markerId: MarkerId("currentLoc"),
+        icon: currentLocationIcon,
+        position: LatLng(-35.36250808785522, 149.1650383646676)));
+  }
+
+  final Set<Marker> _markers = {};
   String _currentUserId = "";
   String _droneDurum = "-";
   String _estimatedTime = "-";
@@ -136,11 +215,10 @@ class _DetailsPageState extends State<DetailsPage> {
 
   @override
   void initState() {
-    _markers = setMarkers();
-
     setDbCurrentValues();
     getPolyPoints();
-
+    setCustomMarkerIcon();
+    //_markers = setMarkers();
     super.initState();
   }
 
@@ -442,10 +520,10 @@ class _DetailsPageState extends State<DetailsPage> {
                                     dense: true,
                                     subtitle: Text(
                                       "${getDistanceBetween(
-                                        _hastane.latitude,
-                                        _kizilay.latitude,
-                                        _hastane.longitude,
-                                        _kizilay.longitude,
+                                        widget.talepciLat,
+                                        widget.kizilayLat,
+                                        widget.talepciLng,
+                                        widget.kizilayLng,
                                       )} km",
                                       style: GoogleFonts.roboto(
                                           fontWeight: FontWeight.w600,
@@ -541,31 +619,29 @@ class _DetailsPageState extends State<DetailsPage> {
 
   ElevatedButton _hastaneElevatedButtonControl(BuildContext context) {
     return ElevatedButton(
-      onPressed: () async => widget.userSpesicifTalepList!["durum"] != "yolda"
-          ? null
-          : _showHastaneOnayDialog(context),
-      child: Center(
-        child:
-            _droneDurum == "Yolda" ? Text("Paketi Aldım") : Icon(Icons.clear),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: projectCyan,
       ),
+      onPressed: _droneDurum != "yolda"
+          ? null
+          : () async => _showHastaneOnayDialog(context),
+      child: Center(child: Text("Paketi Aldım")),
     );
   }
 
   ElevatedButton _kizilayElevatedButtonControl(context) {
     return ElevatedButton(
-      onPressed: () async {
-        String dt = DateFormat("HH:mm").format(DateTime.now());
-        widget.userSpesicifTalepList![dbDocDroneDurum] == "iletildi"
-            ? {
-                _showKizilayOnayDialog(dt, context),
-              }
-            : null;
-      },
+      onPressed: _droneDurum == "iletildi"
+          ? () async {
+              String dt = DateFormat("HH:mm").format(DateTime.now());
+              _showKizilayOnayDialog(dt, context);
+            }
+          : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: projectCyan,
       ),
       child: Center(
-        child: _droneDurum == "iletildi" ? Text("Yola Çık") : Icon(Icons.clear),
+        child: Text("Yola Çık"),
       ),
     );
   }
@@ -770,7 +846,7 @@ class _DetailsPageState extends State<DetailsPage> {
         },
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
-          target: _kizilay,
+          target: LatLng(widget.kizilayLat, widget.kizilayLng),
           zoom: 17,
           tilt: 50,
           bearing: 30,
@@ -781,7 +857,10 @@ class _DetailsPageState extends State<DetailsPage> {
             polylineId: PolylineId("yol"),
             visible: true,
             zIndex: 1,
-            points: [_kizilay, _hastane],
+            points: [
+              LatLng(widget.kizilayLat, widget.kizilayLng),
+              LatLng(widget.talepciLat, widget.talepciLng)
+            ],
             color: projectCyan,
             width: 3,
           ),
