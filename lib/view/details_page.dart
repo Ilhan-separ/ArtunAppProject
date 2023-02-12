@@ -92,7 +92,6 @@ class _DetailsPageState extends State<DetailsPage> {
   List<LatLng> polyLineCoordinates = [];
 
   void getPolyPoints() async {
-    //TODO: Real time tracking yapılacak.
     PolylinePoints polylinePoints = PolylinePoints();
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
@@ -109,30 +108,6 @@ class _DetailsPageState extends State<DetailsPage> {
     }
   }
 
-//   Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(BuildContext context, String assetName) async {
-//     // Read SVG file as String
-//     String svgString = await DefaultAssetBundle.of(context).loadString(assetName);
-
-//     // Create DrawableRoot from SVG String
-//      DrawableRoot svgDrawableRoot = await svg.fromSvgString(svgString, null);
-
-//     // toPicture() and toImage() don't seem to be pixel ratio aware, so we calculate the actual sizes here
-//     MediaQueryData queryData = MediaQuery.of(context);
-//     double devicePixelRatio = queryData.devicePixelRatio;
-//     double width = 32 * devicePixelRatio; // where 32 is your SVG's original width
-//     double height = 32 * devicePixelRatio; // same thing
-
-//     // Convert to ui.Picture
-//     ui.Picture picture = svgDrawableRoot.toPicture(size: Size(width, height));
-
-//     // Convert to ui.Image. toImage() takes width and height as parameters
-//     // you need to find the best size to suit your needs and take into account the
-//     // screen DPI
-//     ui.Image image = await picture.toImage(width, height);
-//     ByteData bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-//     return BitmapDescriptor.fromBytes(bytes.buffer.asUint8List());
-// }
-
   Future<Uint8List> getBytesFromAsset(
       {required String path, required int width}) async {
     ByteData data = await rootBundle.load(path);
@@ -148,61 +123,20 @@ class _DetailsPageState extends State<DetailsPage> {
   BitmapDescriptor kizilayIcon = BitmapDescriptor.defaultMarker;
   BitmapDescriptor currentLocationIcon = BitmapDescriptor.defaultMarker;
 
-  Future<void> setCustomMarkerIcon() async {
-    // BitmapDescriptor.fromAssetImage(
-    //         const ImageConfiguration(), "assets/ic_hastane_marker.png")
-    //     .then(
-    //   (icon) {
-    //     hastaneIcon = icon;
-    //   },
-    // );
-    // BitmapDescriptor.fromAssetImage(
-    //         const ImageConfiguration(), "assets/ic_kizilay_marker.png")
-    //     .then(
-    //   (icon) {
-    //     kizilayIcon = icon;
-    //   },
-    // );
-    // BitmapDescriptor.fromAssetImage(
-    //         ImageConfiguration.empty, "assets/Badge.png")
-    //     .then(
-    //   (icon) {
-    //     currentLocationIcon = icon;
-    //   },
-    // );
-
-    final Uint8List hastaneMarker = await getBytesFromAsset(
-        path: "assets/ic_hastane_marker.png", //paste the custom image path
-        width: 60 // size of custom image as marker
+  Future<Uint8List> setCustomMarkerIcon(path, width) async {
+    return await getBytesFromAsset(
+        path:
+            path, //"assets/ic_hastane_marker.png", //paste the custom image path
+        width: width // size of custom image as marker
         );
-    final Uint8List kizilayMarker = await getBytesFromAsset(
-        path: "assets/ic_kizilay_marker.png", //paste the custom image path
-        width: 60 // size of custom image as marker
-        );
-
-    //TODO: current position marker değişecek, markerlar png o yüzden hafif bozuklar o düzeltilerbilir.
-
-    // _kizilay = LatLng(widget.kizilayLat, widget.kizilayLng);
-    // _hastane = LatLng(widget.talepciLat, widget.talepciLng);
-
-    _markers.add(
-      Marker(
-        markerId: MarkerId("kizilay"),
-        icon: BitmapDescriptor.fromBytes(kizilayMarker),
-        position: LatLng(widget.kizilayLat, widget.kizilayLng),
-      ),
-    );
-    _markers.add(
-      Marker(
-        markerId: MarkerId("hastane"),
-        icon: BitmapDescriptor.fromBytes(hastaneMarker),
-        position: LatLng(widget.talepciLat, widget.talepciLng),
-      ),
-    );
-    _markers.add(Marker(
-        markerId: MarkerId("currentLoc"),
-        icon: currentLocationIcon,
-        position: LatLng(-35.36250808785522, 149.1650383646676)));
+    // final Uint8List kizilayMarker = await getBytesFromAsset(
+    //     path: "assets/ic_kizilay_marker.png", //paste the custom image path
+    //     width: 60 // size of custom image as marker
+    //     );
+    // final Uint8List droneMarker = await getBytesFromAsset(
+    //     path: "assets/ic_drone.png", //paste the custom image path
+    //     width: 100 // size of custom image as marker
+    //     );
   }
 
   final Set<Marker> _markers = {};
@@ -217,9 +151,33 @@ class _DetailsPageState extends State<DetailsPage> {
   void initState() {
     setDbCurrentValues();
     getPolyPoints();
-    setCustomMarkerIcon();
+    setMarkers();
     //_markers = setMarkers();
     super.initState();
+  }
+
+  Future<void> setMarkers() async {
+    _markers.add(
+      Marker(
+        markerId: MarkerId("kizilay"),
+        icon: BitmapDescriptor.fromBytes(
+            await setCustomMarkerIcon("assets/ic_hastane_marker.png", 60)),
+        position: LatLng(widget.kizilayLat, widget.kizilayLng),
+      ),
+    );
+    _markers.add(
+      Marker(
+        markerId: MarkerId("hastane"),
+        icon: BitmapDescriptor.fromBytes(
+            await setCustomMarkerIcon("assets/ic_kizilay_marker.png", 60)),
+        position: LatLng(widget.talepciLat, widget.talepciLng),
+      ),
+    );
+    _markers.add(Marker(
+        markerId: MarkerId("currentLoc"),
+        icon: BitmapDescriptor.fromBytes(
+            await setCustomMarkerIcon("assets/ic_drone.png", 100)),
+        position: LatLng(-35.36250808785522, 149.1650383646676)));
   }
 
   late Stream<DocumentSnapshot<Map<String, dynamic>>> myStream;
@@ -242,7 +200,7 @@ class _DetailsPageState extends State<DetailsPage> {
         if (mounted) {
           setState(() {
             _liveLat = data as num;
-            print(" data Lat : $_liveLat");
+            //print(" data Lat : $_liveLat");
           });
         }
       },
@@ -254,7 +212,7 @@ class _DetailsPageState extends State<DetailsPage> {
         if (mounted) {
           setState(() {
             _liveLng = data as num;
-            print(" data Lng : $_liveLng");
+            //print(" data Lng : $_liveLng");
           });
         }
       },
@@ -267,37 +225,48 @@ class _DetailsPageState extends State<DetailsPage> {
             _estimatedTime = data as String;
           });
         }
-        print(" estimated Time :  $data");
+        //print(" estimated Time :  $data");
       },
     );
 
     durumSubscription = myStream.listen((event) {
-      final data = event.data() as Map<String, dynamic>;
-      if (mounted) {
-        setState(() {
-          _droneDurum = data["durum"];
-        });
+      if (event.exists) {
+        if (event.data() == null) {
+          durumSubscription.cancel();
+        }
+
+        final data = event.data() as Map<String, dynamic>;
+        if (mounted) {
+          setState(() {
+            _droneDurum = data["durum"];
+          });
+        }
+        //print("drone Durum : $_droneDurum");
       }
-      print("drone Durum : $_droneDurum");
     });
+
+    var droneMarker = BitmapDescriptor.fromBytes(
+        await setCustomMarkerIcon("assets/ic_drone.png", 100));
+
+    if (mounted) {
+      setState(() {
+        _markers.removeWhere((m) => m.markerId.value == "currentLoc");
+        _markers.add(
+          Marker(
+            markerId: MarkerId("currentLoc"),
+            icon: droneMarker,
+            position: LatLng(_liveLat.toDouble(), _liveLng.toDouble()),
+          ),
+        );
+        //print("LooooooooooooooooooooooooooooooooASDASFZXCAS ${LatLng(_liveLat.toDouble(), _liveLng.toDouble())}");
+      });
+    }
 
     // mapController?.animateCamera(
     //   CameraUpdate.newCameraPosition(
     //     CameraPosition(zoom: 18.8, target: LatLng(_liveLat, _liveLng)),
     //   ),
     // );
-
-    setState(() {
-      _markers.removeWhere((m) => m.markerId.value == "currentLoc");
-      _markers.add(
-        Marker(
-          markerId: MarkerId("currentLoc"),
-          position: LatLng(_liveLat.toDouble(), _liveLng.toDouble()),
-        ),
-      );
-      print(
-          "LooooooooooooooooooooooooooooooooASDASFZXCAS ${LatLng(_liveLat.toDouble(), _liveLng.toDouble())}");
-    });
   }
 
   @override
@@ -712,7 +681,7 @@ class _DetailsPageState extends State<DetailsPage> {
                   .doc(widget.userSpesicifTalepList!["id"])
                   .update({dbDocDroneDurum: "vardı"});
 
-              await isDeliveredRef.set({
+              await isDeliveredRef.update({
                 "isDelivered": true,
               });
               Navigator.of(context).pop();
@@ -847,7 +816,7 @@ class _DetailsPageState extends State<DetailsPage> {
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
           target: LatLng(widget.kizilayLat, widget.kizilayLng),
-          zoom: 17,
+          zoom: 17.8,
           tilt: 50,
           bearing: 30,
         ),

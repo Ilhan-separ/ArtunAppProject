@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:artun_flutter_project/constants.dart';
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:artun_flutter_project/view/details_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +22,14 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
   final Stream<QuerySnapshot> talepRef =
       FirebaseFirestore.instance.collection("Talepler").snapshots();
   int? talepListLenght = 0;
+
+  DatabaseReference liveLocationLatRef =
+      FirebaseDatabase.instance.ref("Live/live_location_lat");
+  DatabaseReference liveLocationLngRef =
+      FirebaseDatabase.instance.ref("Live/live_location_long");
+
+  late StreamSubscription<DatabaseEvent> liveLatListen;
+  late StreamSubscription<DatabaseEvent> liveLngListen;
 
   String _currentUserId = "";
   bool lateCheck = false;
@@ -47,6 +58,43 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
     }
   }
 
+  bool latValue = false;
+  bool lngValue = false;
+  bool listenLiveLoc(lat, lng) {
+    liveLatListen = liveLocationLatRef.onValue.listen(
+      (event) {
+        final data = event.snapshot.value;
+        if (lat == data) {
+          setState(() {
+            latValue = true;
+          });
+        }
+      },
+    );
+
+    liveLngListen = liveLocationLngRef.onValue.listen(
+      (event) {
+        final data = event.snapshot.value;
+        if (lng == data) {
+          setState(() {
+            lngValue = true;
+          });
+        }
+      },
+    );
+
+    if (latValue == true && lngValue == true) {
+      return true;
+    }
+    return false;
+  }
+
+  void dispose() {
+    liveLatListen.cancel();
+    liveLngListen.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -60,6 +108,22 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
           if (snapshot.hasData &&
               userSpesificTalepList != null &&
               talepListLenght != 0) {
+            for (var i = 0; i < userSpesificTalepList.length; i++) {
+              if (userSpesificTalepList[i]!["durum"] == "vardı") {
+                bool isFinish = listenLiveLoc(
+                    userSpesificTalepList[i]!["kizilayLat"],
+                    userSpesificTalepList[i]!["kizilayLng"]);
+                if (isFinish) {
+                  FirebaseFirestore.instance
+                      .collection("Talepler")
+                      .doc(userSpesificTalepList[i]!["id"])
+                      .delete()
+                      .then((value) => print("başarılı bir şekilde silindi."));
+                }
+                print(
+                    "Takipteki varan drone : $isFinish ,,,,,, ${userSpesificTalepList[i]!["id"]}");
+              }
+            }
             lateCheck = true;
           } else {
             lateCheck = false;

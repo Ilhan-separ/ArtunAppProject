@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:artun_flutter_project/utilities/app_state_manager.dart';
 import 'package:artun_flutter_project/view/details_page.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +20,14 @@ class KizilayTaleplerPage extends StatefulWidget {
 class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
   final Stream<QuerySnapshot> talepRef =
       FirebaseFirestore.instance.collection("Talepler").snapshots();
+  DatabaseReference liveLocationLatRef =
+      FirebaseDatabase.instance.ref("Live/live_location_lat");
+  DatabaseReference liveLocationLngRef =
+      FirebaseDatabase.instance.ref("Live/live_location_long");
+
+  late StreamSubscription<DatabaseEvent> liveLatListen;
+  late StreamSubscription<DatabaseEvent> liveLngListen;
+
   int? talepListLenght = 0;
 
   String _currentUserId = "";
@@ -50,6 +61,43 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
     }
   }
 
+  bool latValue = false;
+  bool lngValue = false;
+  bool listenLiveLoc(lat, lng) {
+    liveLatListen = liveLocationLatRef.onValue.listen(
+      (event) {
+        final data = event.snapshot.value;
+        if (lat == data) {
+          setState(() {
+            latValue = true;
+          });
+        }
+      },
+    );
+
+    liveLngListen = liveLocationLngRef.onValue.listen(
+      (event) {
+        final data = event.snapshot.value;
+        if (lng == data) {
+          setState(() {
+            lngValue = true;
+          });
+        }
+      },
+    );
+
+    if (latValue == true && lngValue == true) {
+      return true;
+    }
+    return false;
+  }
+
+  void dispose() {
+    liveLatListen.cancel();
+    liveLngListen.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -62,11 +110,31 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
           if (snapshot.hasData &&
               userSpesificTalepList.isNotEmpty &&
               talepListLenght != 0) {
+            for (var i = 0; i < userSpesificTalepList.length; i++) {
+              if (userSpesificTalepList[i]!["durum"] == "vardı") {
+                bool isFinish = listenLiveLoc(
+                    userSpesificTalepList[i]!["kizilayLat"],
+                    userSpesificTalepList[i]!["kizilayLng"]);
+                if (isFinish) {
+                  FirebaseFirestore.instance
+                      .collection("Talepler")
+                      .doc(userSpesificTalepList[i]!["id"])
+                      .delete()
+                      .then((value) => print("başarılı bir şekilde silindi."));
+                }
+                print(
+                    "Takipteki varan drone : $isFinish ,,,,,, ${userSpesificTalepList[i]!["id"]}");
+              }
+            }
             lateCheck = true;
           } else {
             lateCheck = false;
           }
 
+          // print("snapshot DATA :: ${snapshot.data!.docs[0].data()}");
+          // for (var i = 0; i < snapshot.data; i++) {
+
+          // }
           if (!isTalepExist) {
             return Center(
               child: Text(
