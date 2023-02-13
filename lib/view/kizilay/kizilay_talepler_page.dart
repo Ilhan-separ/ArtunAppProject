@@ -70,6 +70,7 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
         if (lat == data) {
           setState(() {
             latValue = true;
+            print("DATAAAAAAAAAA $data");
           });
         }
       },
@@ -81,6 +82,7 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
         if (lng == data) {
           setState(() {
             lngValue = true;
+            print("DATAAAAAAAAAA $data");
           });
         }
       },
@@ -92,6 +94,7 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
     return false;
   }
 
+  @override
   void dispose() {
     liveLatListen.cancel();
     liveLngListen.cancel();
@@ -160,7 +163,7 @@ class _KizilayTaleplerPageState extends State<KizilayTaleplerPage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => DetailsPage(
-                                userSpesicifTalepList:
+                                userSpesificTalepList:
                                     userSpesificTalepList[index],
                                 kizilayLat: userSpesificTalepList[index]![
                                     dbDocKizilayLat],

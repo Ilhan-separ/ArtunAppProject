@@ -20,7 +20,7 @@ import 'dart:math' as math;
 import '../constants.dart';
 
 class DetailsPage extends StatefulWidget {
-  final Map<String, dynamic>? userSpesicifTalepList;
+  final Map<String, dynamic>? userSpesificTalepList;
   final double kizilayLat;
   final double talepciLat;
   final double kizilayLng;
@@ -28,7 +28,7 @@ class DetailsPage extends StatefulWidget {
 
   const DetailsPage({
     super.key,
-    required this.userSpesicifTalepList,
+    required this.userSpesificTalepList,
     required this.kizilayLat,
     required this.talepciLat,
     required this.kizilayLng,
@@ -57,6 +57,7 @@ class _DetailsPageState extends State<DetailsPage> {
       FirebaseDatabase.instance.ref("Live/live_location_lat");
   DatabaseReference liveLocationLngRef =
       FirebaseDatabase.instance.ref("Live/live_location_long");
+  var kizilayRef = FirebaseFirestore.instance.collection("KizilayUsers");
 
   // Uzaklık Hesaplaması
   String getDistanceBetween(
@@ -191,7 +192,7 @@ class _DetailsPageState extends State<DetailsPage> {
   Future<void> setDbCurrentValues() async {
     myStream = FirebaseFirestore.instance
         .collection("Talepler")
-        .doc(widget.userSpesicifTalepList!["id"])
+        .doc(widget.userSpesificTalepList!["id"])
         .snapshots();
 
     liveLatListen = liveLocationLatRef.onValue.listen(
@@ -378,14 +379,14 @@ class _DetailsPageState extends State<DetailsPage> {
                                     child: Column(children: [
                                       _kanGrubuVeUniteRow(
                                           "Kan Grubu",
-                                          widget.userSpesicifTalepList![
+                                          widget.userSpesificTalepList![
                                               dbDocKanGrubu]),
                                       SizedBox(
                                         height: 12,
                                       ),
                                       _kanGrubuVeUniteRow(
                                           "Ünite",
-                                          widget.userSpesicifTalepList![
+                                          widget.userSpesificTalepList![
                                               dbDocKanUnite]),
                                     ]),
                                   ),
@@ -426,7 +427,7 @@ class _DetailsPageState extends State<DetailsPage> {
                                               _kalkisVeVarisBuilder(
                                                   "Kalkış", "kalkis"),
                                               Text(
-                                                widget.userSpesicifTalepList![
+                                                widget.userSpesificTalepList![
                                                     dbDocKizilay],
                                                 style: GoogleFonts.roboto(
                                                   textStyle: TextStyle(
@@ -460,7 +461,7 @@ class _DetailsPageState extends State<DetailsPage> {
                                               _kalkisVeVarisBuilder(
                                                   "Varış", "varis"),
                                               Text(
-                                                widget.userSpesicifTalepList![
+                                                widget.userSpesificTalepList![
                                                     dbDocTalepEden],
                                                 style: GoogleFonts.roboto(
                                                   textStyle: TextStyle(
@@ -511,7 +512,7 @@ class _DetailsPageState extends State<DetailsPage> {
                                           ),
                                         ),
                                         Text(
-                                          widget.userSpesicifTalepList![
+                                          widget.userSpesificTalepList![
                                               dbDocOlusturulmaSaati],
                                           style: GoogleFonts.roboto(
                                             fontWeight: FontWeight.w600,
@@ -531,7 +532,7 @@ class _DetailsPageState extends State<DetailsPage> {
                       Container(
                         margin: EdgeInsets.only(bottom: 8, left: 8, right: 8),
                         child: _currentUserId ==
-                                widget.userSpesicifTalepList!["kizilayID"]
+                                widget.userSpesificTalepList!["kizilayID"]
                             ? _kizilayElevatedButtonControl(context)
                             : _hastaneElevatedButtonControl(context),
                       )
@@ -615,6 +616,8 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
+  bool basildi = false;
+
   Future<dynamic> _showKizilayOnayDialog(String dt, context) {
     return showDialog(
       context: context,
@@ -631,24 +634,45 @@ class _DetailsPageState extends State<DetailsPage> {
               ),
             ),
           ),
-          TextButton(
-            onPressed: () async {
-              //TODO: Dronun varmış olma durmunu drondan gelen veriler ile algılayacağım.
+          ElevatedButton(
+            onPressed: !basildi
+                ? () async {
+                    basildi = true;
+                    int unite =
+                        int.parse(widget.userSpesificTalepList!["unite"]);
+                    int currentStok = 0;
+                    await kizilayRef
+                        .doc(widget.userSpesificTalepList!["kizilayID"])
+                        .get()
+                        .then((value) {
+                      var map = value.data() as Map<String, dynamic>;
+                      currentStok = map["kanStogu"]
+                          ["${widget.userSpesificTalepList!["kanGrubu"]}"];
+                    });
+                    var kalan = currentStok - unite;
 
-              await FirebaseFirestore.instance
-                  .collection("Talepler")
-                  .doc(widget.userSpesicifTalepList!["id"])
-                  .update({dbDocDroneDurum: "yolda", dbDocKalkisSaati: dt});
-              await hastaneLocRef.set({
-                "hospitalLocation_lat": widget.talepciLat,
-                "hospitalLocation_long": widget.talepciLng,
-              });
+                    await FirebaseFirestore.instance
+                        .collection("Talepler")
+                        .doc(widget.userSpesificTalepList!["id"])
+                        .update(
+                            {dbDocDroneDurum: "yolda", dbDocKalkisSaati: dt});
+                    await hastaneLocRef.set({
+                      "hospitalLocation_lat": widget.talepciLat,
+                      "hospitalLocation_long": widget.talepciLng,
+                    });
 
-              Navigator.of(context).pop();
-            },
+                    await kizilayRef
+                        .doc(widget.userSpesificTalepList!["kizilayID"])
+                        .update({
+                      "kanStogu.${widget.userSpesificTalepList!["kanGrubu"]}":
+                          kalan
+                    }).then((value) => Navigator.of(context).pop());
+                  }
+                : null,
             child: Text(
               "Onaylıyorum",
-              style: TextStyle(color: projectCyan, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -678,7 +702,7 @@ class _DetailsPageState extends State<DetailsPage> {
 
               await FirebaseFirestore.instance
                   .collection("Talepler")
-                  .doc(widget.userSpesicifTalepList!["id"])
+                  .doc(widget.userSpesificTalepList!["id"])
                   .update({dbDocDroneDurum: "vardı"});
 
               await isDeliveredRef.update({

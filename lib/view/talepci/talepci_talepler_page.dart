@@ -58,6 +58,7 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
     }
   }
 
+  bool isFinish = false;
   bool latValue = false;
   bool lngValue = false;
   bool listenLiveLoc(lat, lng) {
@@ -65,9 +66,11 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
       (event) {
         final data = event.snapshot.value;
         if (lat == data) {
-          setState(() {
-            latValue = true;
-          });
+          if (mounted) {
+            setState(() {
+              latValue = true;
+            });
+          }
         }
       },
     );
@@ -76,9 +79,11 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
       (event) {
         final data = event.snapshot.value;
         if (lng == data) {
-          setState(() {
-            lngValue = true;
-          });
+          if (mounted) {
+            setState(() {
+              lngValue = true;
+            });
+          }
         }
       },
     );
@@ -89,6 +94,7 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
     return false;
   }
 
+  @override
   void dispose() {
     liveLatListen.cancel();
     liveLngListen.cancel();
@@ -110,7 +116,7 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
               talepListLenght != 0) {
             for (var i = 0; i < userSpesificTalepList.length; i++) {
               if (userSpesificTalepList[i]!["durum"] == "vardı") {
-                bool isFinish = listenLiveLoc(
+                isFinish = listenLiveLoc(
                     userSpesificTalepList[i]!["kizilayLat"],
                     userSpesificTalepList[i]!["kizilayLng"]);
                 if (isFinish) {
@@ -153,7 +159,7 @@ class _TalepciTaleplerPageState extends State<TalepciTaleplerPage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => DetailsPage(
-                                userSpesicifTalepList:
+                                userSpesificTalepList:
                                     userSpesificTalepList[index],
                                 kizilayLat: userSpesificTalepList[index]![
                                     dbDocKizilayLat],

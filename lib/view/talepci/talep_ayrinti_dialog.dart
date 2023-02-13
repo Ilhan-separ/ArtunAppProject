@@ -67,12 +67,15 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
   void stokListDoldur() {
     stok = [];
     for (var i = 0; i < widget.dbKizilayMap!.length; i++) {
+      print(
+          "kan stokları ${widget.dbKizilayMap![i]["kanStogu"][widget.kanGrubuText]}");
       if (widget.uniteSayisi <=
           widget.dbKizilayMap![i]["kanStogu"][widget.kanGrubuText]) {
         stok.add("Var");
       } else {
         stok.add("Yok");
       }
+      print("Stok Var YOKKK ${stok}");
     }
   }
 
@@ -169,7 +172,7 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
                           context,
                           widget.dbKizilayMap![i]["name"],
                           widget.dbKizilayMap![i]["arac"],
-                          stok[0],
+                          stok[i],
                           getDistanceBetween(
                             _userLat,
                             widget.dbKizilayMap![i]["lat"],
@@ -280,6 +283,8 @@ class _TalepAyrintiDialogState extends State<TalepAyrintiDialog> {
                         "kizilayID": widget.dbKizilayMap![optimumIndex]["id"],
                         "kizilayLat": widget.dbKizilayMap![optimumIndex]["lat"],
                         "kizilayLng": widget.dbKizilayMap![optimumIndex]["lng"],
+                        "kizilayStok": widget.dbKizilayMap![optimumIndex]
+                            ["kanStogu"][widget.kanGrubuText],
                         "durum": "iletildi",
                         "id": "",
                         "olusturmaSaati": dt,
